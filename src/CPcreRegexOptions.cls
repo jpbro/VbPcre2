@@ -69,15 +69,6 @@ Private m_Options As Long
 Private m_Global As Boolean
 Private m_EnumerateCallouts As Boolean
 
-Public Property Get AllowDuplicateSubpatternNames() As Boolean
-   AllowDuplicateSubpatternNames = m_Options And PCRE2_DUPNAMES
-End Property
-
-Public Property Let AllowDuplicateSubpatternNames(ByVal p_Enabled As Boolean)
-   AddOrRemoveRegexOptionFlag PCRE2_DUPNAMES, p_Enabled
-End Property
-
-
 Private Sub Class_Initialize()
    ' Setup default options
    
@@ -100,6 +91,17 @@ Private Sub AddOrRemoveRegexOptionFlag(ByVal p_Flag As Long, ByVal p_Add As Bool
       m_Options = m_Options And Not p_Flag
    End If
 End Sub
+
+' Set AllowDuplicateSubpatternNames to TRUE to allow duplicate named sub-patterns.
+' Set to FALSE to raise an error when duplicate subpattern names are encountered.
+Public Property Get AllowDuplicateSubpatternNames() As Boolean
+   AllowDuplicateSubpatternNames = m_Options And PCRE2_DUPNAMES
+End Property
+
+Public Property Let AllowDuplicateSubpatternNames(ByVal p_Enabled As Boolean)
+   AddOrRemoveRegexOptionFlag PCRE2_DUPNAMES, p_Enabled
+End Property
+
 
 ' If CASE SENSITIVE option is FALSE, letters in the pattern match both upper and lower case letters in the subject.
 Public Property Get CaseSensitive() As Boolean
