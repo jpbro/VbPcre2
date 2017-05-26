@@ -39,7 +39,16 @@ Option Explicit
 ' OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ' SOFTWARE.
 
+Private WithEvents mo_Pcre As CPcre
+Attribute mo_Pcre.VB_VarHelpID = -1
+
 Private Sub Form_Load()
-   TestRegexCallout
+   Set mo_Pcre = New CPcre
+   
+   TestRegexCallout mo_Pcre
    Unload Me
+End Sub
+
+Private Sub mo_Pcre_CalloutEnumerateReceived(ByVal p_CalloutNumber As Long, ByVal p_PatternPosition As Long, ByVal p_NextItemLength As Long, ByVal p_CalloutOffset As Long, ByVal p_CalloutLength As Long, ByVal p_CalloutString As String, p_ReturnValue As Long)
+   Debug.Print "Callout #" & p_CalloutNumber & " Received in " & Me.Name
 End Sub

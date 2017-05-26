@@ -43,16 +43,16 @@ Sub TestRegex()
    End If
 End Sub
 
-Sub TestRegexCallout()
-   Dim lo_RegEx As New CPcre
+Sub TestRegexCallout(po_Pcre As CPcre)
    Dim lo_Matches As CPcreMatches
    Dim ii As Long
    
-   With lo_RegEx.RegexOptions
+   With po_Pcre.RegexOptions
       .CaseSensitive = False
+      .EnumerateCallouts = True
    End With
    
-   Set lo_Matches = lo_RegEx.Execute("This is a test of matching stuff!", "(?C1)(test)\s*.+\s*(Mat)")
+   Set lo_Matches = po_Pcre.Execute("This is a test of matching stuff!", "(?C""test"")test\s*.+\s*(Mat)")
    If lo_Matches.Count > 0 Then
       For ii = 0 To lo_Matches.Count - 1
          Debug.Print "Match #" & ii + 1 & ": " & lo_Matches(ii).Value
@@ -64,7 +64,7 @@ Sub TestRegexCallout()
 End Sub
 
 Sub TestRegex2()
-   Dim lo_RegEx As VBScript_RegExp_55.RegExp
+   Dim lo_RegEx As Object ' VBScript_RegExp_55.RegExp
    Dim lo_Matches As Object 'VBScript_RegExp_55.MatchCollection
    Dim lo_Match As Object 'VBScript_RegExp_55.Match
    

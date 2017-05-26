@@ -53,9 +53,9 @@ Private Const PCRE2_UTF                 As Long = &H80000
 Private Const PCRE2_NEVER_BACKSLASH_C   As Long = &H100000
 Private Const PCRE2_ALT_CIRCUMFLEX      As Long = &H200000
 Private Const PCRE2_AUTO_CALLOUT        As Long = &H4 ' TODO: Callouts not implemented
+Private Const PCRE2_DUPNAMES            As Long = &H40
 
 ' UNIMPLEMENTED
-Private Const PCRE2_DUPNAMES            As Long = &H40
 Private Const PCRE2_MATCH_UNSET_BACKREF As Long = &H200
 Private Const PCRE2_NEVER_UCP           As Long = &H800
 Private Const PCRE2_NEVER_UTF           As Long = &H1000
@@ -67,6 +67,7 @@ Private Const PCRE2_UCP                 As Long = &H20000
 
 Private m_Options As Long
 Private m_Global As Boolean
+Private m_EnumerateCallouts As Boolean
 
 Public Property Get AllowDuplicateSubpatternNames() As Boolean
    AllowDuplicateSubpatternNames = m_Options And PCRE2_DUPNAMES
@@ -305,3 +306,15 @@ Public Property Let GlobalSearch(ByVal p_Enabled As Boolean)
    m_Global = p_Enabled
 End Property
    
+
+' Set EnumerateCallouts to True to enumerate all callouts in a pattern before matching
+' Set EnumerateCallouts to False to skip callout enumeration
+Public Property Get EnumerateCallouts() As Boolean
+   EnumerateCallouts = m_EnumerateCallouts
+End Property
+   
+Public Property Let EnumerateCallouts(ByVal p_Enabled As Boolean)
+   m_EnumerateCallouts = p_Enabled
+End Property
+   
+

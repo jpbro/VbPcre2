@@ -35,6 +35,15 @@ Option Explicit
 ' OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ' SOFTWARE.
 
+
+Public Event CalloutEnumerateReceived(ByVal p_CalloutNumber As Long, _
+                                      ByVal p_PatternPosition As Long, _
+                                      ByVal p_NextItemLength As Long, _
+                                      ByVal p_CalloutOffset As Long, _
+                                      ByVal p_CalloutLength As Long, _
+                                      ByVal p_CalloutString As String, _
+                                      ByRef p_ReturnValue As Long)
+
 Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryA" (ByVal p_LibraryFileName As String) As Long
 Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal p_Hmodule As Long) As Long
 
@@ -47,6 +56,7 @@ Private Declare Function pcre2_match Lib "pcre2-16.dll" Alias "_pcre2_match_16@2
 Private Declare Function pcre2_get_ovector_pointer Lib "pcre2-16.dll" Alias "_pcre2_get_ovector_pointer_16@4" (ByVal p_MatchDataHandle As Long) As Long
 Private Declare Sub pcre2_match_data_free Lib "pcre2-16.dll" Alias "_pcre2_match_data_free_16@4" (ByVal p_MatchDataHandle As Long)
 Private Declare Function pcre2_set_callout Lib "pcre2-16.dll" Alias "_pcre2_set_callout_16@12" (ByVal p_MatchDataHandle As Long, ByVal p_CalloutAddress As Long, ByRef p_CalloutDataPointer As Long) As Long
+Private Declare Function pcre2_callout_enumerate Lib "pcre2-16.dll" Alias "_pcre2_callout_enumerate_16@12" (ByVal p_CompiledRegexHandle As Long, ByVal p_CalloutAddress As Long, ByRef p_CalloutDataPointer As Long) As Long
 
 Private Const PCRE2_ERROR_NOMATCH As Long = -1
 
@@ -149,8 +159,14 @@ Public Function Execute(ByVal p_TextToSearch As String, ByVal p_RegexToMatch As 
    
    If l_MatchData = 0 Then Err.Raise vbObjectError, , "Could not allocate match data! Last DLL Error: " & Err.LastDllError
 
-   Debug.Print "Callout: " & pcre2_set_callout(l_MatchData, AddressOf pcreCalloutProc, ObjPtr(Me))
-
+   If Me.RegexOptions.EnumerateCallouts Then
+      If pcre2_callout_enumerate(l_CompiledRegex, AddressOf pcreCalloutEnumerateProc, ObjPtr(Me)) Then
+         ' Nonzero return values will cancel matching.
+         Debug.Assert False
+         GoTo NoErrorCleanup
+      End If
+   End If
+   
    l_GlobalSearch = Me.RegexOptions.GlobalSearch
    
    Set Execute = New CPcreMatches
@@ -188,6 +204,9 @@ Public Function Execute(ByVal p_TextToSearch As String, ByVal p_RegexToMatch As 
       
    Loop While l_GlobalSearch And (l_MatchCount > 0)
    
+NoErrorCleanup:
+   On Error Resume Next
+   
    l_ErrorNumber = 0
    l_ErrorDesc = ""
    
@@ -222,4 +241,19 @@ Private Sub Cleanup()
    'Free compile context before exiting
    If m_Context <> 0 Then pcre2_compile_context_free m_Context: m_Context = 0
 End Sub
+
+Friend Function RaiseCalloutEnumerateEvent(pt_CalloutEnumerateBlock As pcreCalloutEnumerateBlock) As Long
+   Dim l_ReturnValue As Long
+   Dim l_CalloutString As String
+   
+   With pt_CalloutEnumerateBlock
+      If .CalloutStringPointer <> 0 Then
+         l_CalloutString = stringGetFromPointerW(.CalloutStringPointer)
+      End If
+      
+      RaiseEvent CalloutEnumerateReceived(.CalloutNumber, .PatternPosition, .NextItemLength, .CalloutStringOffset, .CalloutStringLength, l_CalloutString, l_ReturnValue)
+   End With
+   
+   RaiseCalloutEnumerateEvent = l_ReturnValue
+End Function
 

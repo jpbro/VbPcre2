@@ -23,7 +23,7 @@ Option Explicit
 ' OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ' SOFTWARE.
 
-Private Type pcreCalloutBlock
+Public Type pcreCalloutBlock
    Version As Long
    CalloutNumber As Long
    CaptureTop As Long
@@ -41,9 +41,19 @@ Private Type pcreCalloutBlock
    CalloutStringPointer As Long
 End Type
 
+Public Type pcreCalloutEnumerateBlock
+   Version As Long
+   PatternPosition As Long
+   NextItemLength As Long
+   CalloutNumber As Long
+   CalloutStringOffset As Long
+   CalloutStringLength As Long
+   CalloutStringPointer As Long
+End Type
+
 Public Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 
-Public Function pcreCalloutProc(ByVal p_CalloutBlockPointer As Long, ByRef p_UserData As Long) As Long
+Public Function pcreCalloutEnumerateProc(ByVal p_CalloutEnumerateBlockPointer As Long, ByRef p_UserData As Long) As Long
    ' RETURN VALUES FROM CALLOUTS
    ' The external callout function returns an integer to PCRE2.
    ' If the value is zero, matching proceeds as normal.
@@ -53,16 +63,32 @@ Public Function pcreCalloutProc(ByVal p_CalloutBlockPointer As Long, ByRef p_Use
    ' In particular, PCRE2_ERROR_NOMATCH forces a standard "no match" failure.
    ' The error number PCRE2_ERROR_CALLOUT is reserved for use by callout functions; it will never be used by PCRE2 itself.
    
-   Dim lt_CalloutBlock As modPcre.pcreCalloutBlock
+   Dim lt_CalloutEnumerateBlock As modPcre.pcreCalloutEnumerateBlock
+   Dim lo_Pcre As CPcre
    
-   MsgBox "INCALLOUT"
-   Debug.Assert False
-   Debug.Print "IN CALLOUT"
+   Debug.Print "In pcreCalloutEnumerateProc"
    
-   CopyMemory ByVal VarPtr(lt_CalloutBlock), p_CalloutBlockPointer, LenB(lt_CalloutBlock)
+   ' Get a weak reference to the appropriate PCRE object
+   Set lo_Pcre = GetWeakReference(p_UserData)
+   
+   CopyMemory ByVal VarPtr(lt_CalloutEnumerateBlock), ByVal p_CalloutEnumerateBlockPointer, LenB(lt_CalloutEnumerateBlock)
 
-   Debug.Print lt_CalloutBlock.Version
+   ' Ask the PCRE object to raise an event so the hosting code can respond to the callout
+   pcreCalloutEnumerateProc = lo_Pcre.RaiseCalloutEnumerateEvent(lt_CalloutEnumerateBlock)
 
-   Debug.Print "OUT CALLOUT"
+   Debug.Print "Out pcreCalloutEnumerateProc. Result: " & pcreCalloutEnumerateProc
+End Function
+
+Private Function GetWeakReference(ByVal p_Pointer As Long) As CPcre
+   ' Can't remember where I found this code a long time ago -
+   ' would be very happy to credit the originator if anyone knows who it is?
+   
+   Dim lo_Object As CPcre
+   
+   CopyMemory lo_Object, p_Pointer, 4&
+
+   Set GetWeakReference = lo_Object
+
+   CopyMemory lo_Object, 0&, 4&
 End Function
 
