@@ -68,6 +68,15 @@ Private Const PCRE2_UCP                 As Long = &H20000
 Private m_Options As Long
 Private m_Global As Boolean
 
+Public Property Get AllowDuplicateSubpatternNames() As Boolean
+   AllowDuplicateSubpatternNames = m_Options And PCRE2_DUPNAMES
+End Property
+
+Public Property Let AllowDuplicateSubpatternNames(ByVal p_Enabled As Boolean)
+   AddOrRemoveRegexOptionFlag PCRE2_DUPNAMES, p_Enabled
+End Property
+
+
 Private Sub Class_Initialize()
    ' Setup default options
    
