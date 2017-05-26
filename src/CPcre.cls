@@ -40,7 +40,7 @@ Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal p_Hmodule As Long
 
 Private Declare Function pcre2_compile_context_create Lib "pcre2-16.dll" Alias "_pcre2_compile_context_create_16@4" (Optional ByVal p_MallocFunc As Long = 0&) As Long
 Private Declare Sub pcre2_compile_context_free Lib "pcre2-16.dll" Alias "_pcre2_compile_context_free_16@4" (ByVal p_ContextHandle As Long)
-Private Declare Function pcre2_compile Lib "pcre2-16.dll" Alias "_pcre2_compile_16@24" (ByVal p_RegexStringPointer As Long, ByVal p_RegexStringLength As Long, ByVal p_CompileOptions As Long, ByRef p_ErrorCode As Long, ByRef p_CharWhereErrorOccured As Long, Optional ByVal p_ContextHandle As Long = &H0) As Long
+Private Declare Function pcre2_compile Lib "pcre2-16.dll" Alias "_pcre2_compile_16@24" (ByVal p_RegexStringPointer As Long, ByVal p_RegexStringLength As Long, ByVal p_CompileOptions As PCRE_CompileOptions, ByRef p_ErrorCode As PCRE_ErrorCode, ByRef p_CharWhereErrorOccured As Long, Optional ByVal p_ContextHandle As Long = &H0) As Long
 Private Declare Sub pcre2_code_free Lib "pcre2-16.dll" Alias "_pcre2_code_free_16@4" (ByVal p_CompiledRegecHandle As Long)
 Private Declare Function pcre2_match_data_create_from_pattern Lib "pcre2-16.dll" Alias "_pcre2_match_data_create_from_pattern_16@8" (ByVal p_CompiledRegexHandle As Long, ByVal p_Options As Long) As Long
 Private Declare Function pcre2_match Lib "pcre2-16.dll" Alias "_pcre2_match_16@28" (ByVal p_CompiledRegexHandle As Long, ByVal p_StringToSearchPointer As Long, ByVal p_StringToSearchLength As Long, ByVal p_StartSearchOffset As Long, ByVal p_MatchOptions As Long, ByVal p_MatchDataHandle As Long, ByVal p_ContextHandle As Long) As Long
@@ -87,7 +87,7 @@ Public Function Execute(ByVal p_TextToSearch As String, ByVal p_RegexToMatch As 
 
    Dim l_Context As Long
    Dim l_CompiledRegex As Long
-   Dim l_ErrorCode As Long
+   Dim l_ErrorCode As PCRE_ErrorCode
    Dim l_ErrorPosition As Long
    Dim l_ErrorNumber As Long
    Dim l_ErrorDesc As String
