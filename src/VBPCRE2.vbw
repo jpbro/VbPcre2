@@ -1,0 +1,7 @@
+Form1 = 0, 0, 0, 0, C, 0, 0, 0, 0, C
+modTests = 0, 0, 0, 0, C
+CPcre = 0, 0, 0, 0, C
+CPcreMatch = 0, 0, 0, 0, C
+CPcreRegexOptions = 0, 0, 0, 0, C
+CPcreMatches = 0, 0, 0, 0, C
+modPcre = 0, 0, 0, 0, C
