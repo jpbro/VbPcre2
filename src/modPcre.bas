@@ -53,11 +53,7 @@ End Type
 
 Public Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 
-<<<<<<< HEAD
-Public Function pcreCalloutEnumerateProc(ByVal p_CalloutEnumerateBlockPointer As Long, ByRef p_UserData As Long) As Long
-=======
 Public Enum PCRE_ReturnCode
-
     PCRE_RC_OK = 0
     
     'Error codes: no match and partial match are "expected" errors.
@@ -134,7 +130,6 @@ Public Enum PCRE_ReturnCode
     PCRE_RC_ERROR_BADSUBSPATTERN = -60
     PCRE_RC_ERROR_TOOMANYREPLACE = -61
     PCRE_RC_ERROR_BADSERIALIZEDDATA = -62
-    
 End Enum
 
 'The following option bits can be passed only to pcre2_compile(). However,
@@ -172,8 +167,7 @@ Public Enum PCRE_CompileOptions
     PCRE_CO_USE_OFFSET_LIMIT = &H800000        '   J M D
 End Enum
 
-Public Function pcreCalloutProc(ByVal p_CalloutBlockPointer As Long, ByRef p_UserData As Long) As Long
->>>>>>> origin/master
+Public Function pcreCalloutEnumerateProc(ByVal p_CalloutEnumerateBlockPointer As Long, ByRef p_UserData As Long) As Long
    ' RETURN VALUES FROM CALLOUTS
    ' The external callout function returns an integer to PCRE2.
    ' If the value is zero, matching proceeds as normal.
