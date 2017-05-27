@@ -74,7 +74,7 @@ Public Function pcreCalloutEnumerateProc(ByVal p_CalloutEnumerateBlockPointer As
    CopyMemory ByVal VarPtr(lt_CalloutEnumerateBlock), ByVal p_CalloutEnumerateBlockPointer, LenB(lt_CalloutEnumerateBlock)
 
    ' Ask the PCRE object to raise an event so the hosting code can respond to the callout
-   pcreCalloutEnumerateProc = lo_Pcre.RaiseCalloutEnumerateEvent(lt_CalloutEnumerateBlock)
+   pcreCalloutEnumerateProc = lo_Pcre.RaiseCalloutEnumeratedEvent(lt_CalloutEnumerateBlock)
 
    Debug.Print "Out pcreCalloutEnumerateProc. Result: " & pcreCalloutEnumerateProc
 End Function

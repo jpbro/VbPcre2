@@ -35,14 +35,22 @@ Option Explicit
 ' OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ' SOFTWARE.
 
+Public Enum e_EnumerateCalloutAction
+   enumcalloutaction_Continue = 0
+   enumcalloutaction_StopEnumeration = 1
+   enumcalloutaction_StopAll = 2
 
-Public Event CalloutEnumerateReceived(ByVal p_CalloutNumber As Long, _
-                                      ByVal p_PatternPosition As Long, _
-                                      ByVal p_NextItemLength As Long, _
-                                      ByVal p_CalloutOffset As Long, _
-                                      ByVal p_CalloutLength As Long, _
-                                      ByVal p_CalloutString As String, _
-                                      ByRef p_ReturnValue As Long)
+   enumcalloutaction_RaiseError = vbObjectError
+End Enum
+
+
+Public Event CalloutEnumerated(ByVal p_CalloutNumber As Long, _
+                               ByVal p_PatternPosition As Long, _
+                               ByVal p_NextItemLength As Long, _
+                               ByVal p_CalloutOffset As Long, _
+                               ByVal p_CalloutLength As Long, _
+                               ByVal p_CalloutString As String, _
+                               ByRef p_Action As e_EnumerateCalloutAction)
 
 Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryA" (ByVal p_LibraryFileName As String) As Long
 Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal p_Hmodule As Long) As Long
@@ -69,6 +77,8 @@ Private mo_RegexOptions As CPcreRegexOptions
 Private m_CompiledRegex As Long
 Private m_Context As Long
 
+Private m_Pattern As String   ' Last used regex pattern
+
 Public Function RegexOptions() As CPcreRegexOptions
    If mo_RegexOptions Is Nothing Then Set mo_RegexOptions = New CPcreRegexOptions
    
@@ -89,7 +99,7 @@ Private Sub Class_Terminate()
    End If
 End Sub
 
-Public Function Execute(ByVal p_TextToSearch As String, ByVal p_RegexToMatch As String) As CPcreMatches
+Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMatch As String) As CPcreMatches
    Static s_LastRegex As String
    Static s_LastRegexOptions As Long
    
@@ -107,6 +117,15 @@ Public Function Execute(ByVal p_TextToSearch As String, ByVal p_RegexToMatch As 
    Dim l_OvectorPtr As Long
    Dim la_Ovector() As Long
    Dim l_GlobalSearch As Boolean
+   Dim l_EnumerateResult As e_EnumerateCalloutAction
+   
+   ' Use the value of the Pattern property if option p_RegexToMatch parameter is empty
+   ' Otherwise set the value of the Pattern property to the passed p_RegexToMatch value
+   If p_RegexToMatch = "" Then
+      p_RegexToMatch = Me.Pattern
+   Else
+      Me.Pattern = p_RegexToMatch
+   End If
    
    ' Check if we should recompile regex
    If m_Context = 0 Then
@@ -160,11 +179,21 @@ Public Function Execute(ByVal p_TextToSearch As String, ByVal p_RegexToMatch As 
    If l_MatchData = 0 Then Err.Raise vbObjectError, , "Could not allocate match data! Last DLL Error: " & Err.LastDllError
 
    If Me.RegexOptions.EnumerateCallouts Then
-      If pcre2_callout_enumerate(l_CompiledRegex, AddressOf pcreCalloutEnumerateProc, ObjPtr(Me)) Then
-         ' Nonzero return values will cancel matching.
+      ' Enumerate all callouts before matching
+      
+      l_EnumerateResult = pcre2_callout_enumerate(l_CompiledRegex, AddressOf pcreCalloutEnumerateProc, ObjPtr(Me))
+      
+      Select Case l_EnumerateResult
+      Case enumcalloutaction_StopAll
+         ' Cancel matching.
          Debug.Assert False
          GoTo NoErrorCleanup
-      End If
+         
+      Case Is < 0
+         ' Raise error
+         Err.Raise l_EnumerateResult, , "Host reported error."
+         
+      End Select
    End If
    
    l_GlobalSearch = Me.RegexOptions.GlobalSearch
@@ -242,18 +271,45 @@ Private Sub Cleanup()
    If m_Context <> 0 Then pcre2_compile_context_free m_Context: m_Context = 0
 End Sub
 
-Friend Function RaiseCalloutEnumerateEvent(pt_CalloutEnumerateBlock As pcreCalloutEnumerateBlock) As Long
-   Dim l_ReturnValue As Long
+Friend Function RaiseCalloutEnumeratedEvent(pt_CalloutEnumerateBlock As pcreCalloutEnumerateBlock) As Long
    Dim l_CalloutString As String
+   Dim l_Action As e_EnumerateCalloutAction
    
    With pt_CalloutEnumerateBlock
       If .CalloutStringPointer <> 0 Then
          l_CalloutString = stringGetFromPointerW(.CalloutStringPointer)
       End If
       
-      RaiseEvent CalloutEnumerateReceived(.CalloutNumber, .PatternPosition, .NextItemLength, .CalloutStringOffset, .CalloutStringLength, l_CalloutString, l_ReturnValue)
+      RaiseEvent CalloutEnumerated(.CalloutNumber, .PatternPosition, .NextItemLength, .CalloutStringOffset, .CalloutStringLength, l_CalloutString, l_Action)
    End With
    
-   RaiseCalloutEnumerateEvent = l_ReturnValue
+   RaiseCalloutEnumeratedEvent = l_Action
 End Function
 
+' GlobalSearch and IgnoreCase properties are aliases for GlobalSearch and CaseSensitive options
+' To more closely match VBScript Regex Object Model. Unfortunately we can't have a property call Global
+' because it is a reserved keyword, so we can match VBScript Regex OM exactly :(
+Public Property Let GlobalSearch(ByVal p_Enable As Boolean)
+   Me.RegexOptions.GlobalSearch = p_Enable
+End Property
+
+Public Property Get GlobalSearch() As Boolean
+   GlobalSearch = Me.RegexOptions.GlobalSearch
+End Property
+
+Public Property Let IgnoreCase(ByVal p_Enable As Boolean)
+   Me.RegexOptions.CaseSensitive = Not p_Enable
+End Property
+
+Public Property Get IgnoreCase() As Boolean
+   IgnoreCase = Not Me.RegexOptions.CaseSensitive
+End Property
+
+' Pattern property added to more closely mimic VBScript Regex object model
+Public Property Get Pattern() As String
+   Pattern = m_Pattern
+End Property
+
+Public Property Let Pattern(ByVal p_RegexPattern As String)
+   m_Pattern = p_RegexPattern
+End Property
