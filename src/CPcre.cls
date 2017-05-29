@@ -13,9 +13,9 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
-' MIT License
+' Copyright (c) 2017 Jason Peter Brown <jason@bitspaces.com>
 '
-' Copyright (c) 2017 Jason Peter Brown
+' MIT License
 '
 ' Permission is hereby granted, free of charge, to any person obtaining a copy
 ' of this software and associated documentation files (the "Software"), to deal
@@ -73,13 +73,14 @@ Private Declare Function pcre2_get_ovector_pointer Lib "pcre2-16.dll" Alias "_pc
 Private Declare Sub pcre2_match_data_free Lib "pcre2-16.dll" Alias "_pcre2_match_data_free_16@4" (ByVal p_MatchDataHandle As Long)
 Private Declare Function pcre2_set_callout Lib "pcre2-16.dll" Alias "_pcre2_set_callout_16@12" (ByVal p_MatchDataHandle As Long, ByVal p_CalloutAddress As Long, ByRef p_CalloutDataPointer As Long) As Long
 Private Declare Function pcre2_callout_enumerate Lib "pcre2-16.dll" Alias "_pcre2_callout_enumerate_16@12" (ByVal p_CompiledRegexHandle As Long, ByVal p_CalloutAddress As Long, ByRef p_CalloutDataPointer As Long) As Long
+Private Declare Function pcre2_substitute Lib "pcre2-16.dll" Alias "_pcre2_substitute_16@48" (ByVal p_CompiledRegexHandle As Long, ByVal p_StringToSearchPointer As Long, ByVal p_StringToSearchLength As Long, ByVal p_StartSearchOffset As Long, ByVal p_MatchOptions As Long, ByVal p_MatchDataHandle As Long, ByVal p_ContextHandle As Long, ByVal p_ReplacementTextPointer As Long, ByVal p_ReplacementTextLength As Long, ByVal p_OutputBufferPointer As Long, byrefp_OutputBufferLength As Long) As Long
 
 Private Const PCRE2_ERROR_NOMATCH As Long = -1
 
 Private m_Hlib As Long
 
 ' Options
-Private mo_RegexOptions As CPcreRegexOptions
+Private mo_Options As CPcreOptions
 
 ' Cached Handles
 Private m_CompiledRegex As Long
@@ -87,10 +88,10 @@ Private m_Context As Long
 
 Private m_Pattern As String   ' Last used regex pattern
 
-Public Function RegexOptions() As CPcreRegexOptions
-   If mo_RegexOptions Is Nothing Then Set mo_RegexOptions = New CPcreRegexOptions
+Public Function Options() As CPcreOptions
+   If mo_Options Is Nothing Then Set mo_Options = New CPcreOptions
    
-   Set RegexOptions = mo_RegexOptions
+   Set Options = mo_Options
 End Function
 
 Private Sub Class_Initialize()
@@ -106,6 +107,10 @@ Private Sub Class_Terminate()
       FreeLibrary m_Hlib
    End If
 End Sub
+
+Public Function Replace(ByVal p_TextToSearch As String, ByVal p_ReplaceWithText As String, Optional ByVal p_RegexToMatch As String) As String
+   ' TODO: Impliment pcre2_substitute
+End Function
 
 Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMatch As String) As CPcreMatches
    Static s_LastRegex As String
@@ -151,7 +156,7 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
       If m_CompiledRegex = 0 Then
          l_Recompile = True
       Else
-         If Me.RegexOptions.OptionFlags <> s_LastRegexOptions Then
+         If Me.Options.Match.OptionFlags <> s_LastRegexOptions Then
             l_Recompile = True
          Else
             If Len(s_LastRegex) <> Len(p_RegexToMatch) Then
@@ -175,11 +180,11 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
       
       m_Context = l_Context
       
-      l_CompiledRegex = pcre2_compile(StrPtr(p_RegexToMatch), Len(p_RegexToMatch), Me.RegexOptions.OptionFlags, l_ErrorCode, l_ErrorPosition, l_Context)
+      l_CompiledRegex = pcre2_compile(StrPtr(p_RegexToMatch), Len(p_RegexToMatch), Me.Options.Match.OptionFlags, l_ErrorCode, l_ErrorPosition, l_Context)
       
       If l_CompiledRegex = 0 Then Err.Raise vbObjectError, , "Could not compile regex! Regex: " & p_RegexToMatch & vbNewLine & "Errorcode: " & l_ErrorCode & ", Error Position: " & l_ErrorPosition
       
-      s_LastRegexOptions = Me.RegexOptions.OptionFlags
+      s_LastRegexOptions = Me.Options.Match.OptionFlags
       s_LastRegex = p_RegexToMatch
       m_CompiledRegex = l_CompiledRegex
       
@@ -195,7 +200,7 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
    
    If l_MatchData = 0 Then Err.Raise vbObjectError, , "Could not allocate match data! Last DLL Error: " & Err.LastDllError
 
-   If Me.RegexOptions.EnumerateCallouts Then
+   If Me.Options.Match.EnumerateCallouts Then
       ' Enumerate all callouts before matching
       
       l_EnumerateCalloutAction = pcre2_callout_enumerate(l_CompiledRegex, AddressOf pcreCalloutEnumerateProc, ObjPtr(Me))
@@ -213,7 +218,7 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
       End Select
    End If
    
-   l_GlobalSearch = Me.RegexOptions.GlobalSearch
+   l_GlobalSearch = Me.Options.Match.GlobalSearch
    
    Set Execute = New CPcreMatches
    
@@ -247,7 +252,7 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
          l_MatchText = Mid$(l_SearchChunk, l_MatchStart + 1)
          l_OriginalMatchText = l_MatchText
          
-         If Me.RegexOptions.MatchedEventEnabled Then
+         If Me.Options.Match.MatchedEventEnabled Then
             ' Check if we have a substitution stored in our cache
             l_Substitute = False
             
@@ -283,7 +288,7 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
                      lo_SubstitutionCache.Add l_MatchText, "KEY_" & l_OriginalMatchText
                         
                      ' Make sure cache doesn't get too big
-                     For ii = Me.RegexOptions.SubstitutionCacheSize - 1 To lo_SubstitutionCache.Count - 1
+                     For ii = Me.Options.Match.MatchedEventSubstitutionCacheSize - 1 To lo_SubstitutionCache.Count - 1
                         lo_SubstitutionCache.Remove 0
                      Next ii
                   
@@ -398,19 +403,19 @@ End Function
 ' To more closely match VBScript Regex Object Model. Unfortunately we can't have a property call Global
 ' because it is a reserved keyword, so we can match VBScript Regex OM exactly :(
 Public Property Let GlobalSearch(ByVal p_Enable As Boolean)
-   Me.RegexOptions.GlobalSearch = p_Enable
+   Me.Options.Match.GlobalSearch = p_Enable
 End Property
 
 Public Property Get GlobalSearch() As Boolean
-   GlobalSearch = Me.RegexOptions.GlobalSearch
+   GlobalSearch = Me.Options.Match.GlobalSearch
 End Property
 
 Public Property Let IgnoreCase(ByVal p_Enable As Boolean)
-   Me.RegexOptions.CaseSensitive = Not p_Enable
+   Me.Options.Match.CaseSensitive = Not p_Enable
 End Property
 
 Public Property Get IgnoreCase() As Boolean
-   IgnoreCase = Not Me.RegexOptions.CaseSensitive
+   IgnoreCase = Not Me.Options.Match.CaseSensitive
 End Property
 
 ' Pattern property added to more closely mimic VBScript Regex object model

@@ -6,7 +6,7 @@ BEGIN
   DataSourceBehavior  = 0  'vbNone
   MTSTransactionMode  = 0  'NotAnMTSObject
 END
-Attribute VB_Name = "CPcreRegexOptions"
+Attribute VB_Name = "CPcreOptionsMatch"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
@@ -76,7 +76,7 @@ Private Sub Class_Initialize()
    
    m_Options = PCRE2_NEVER_BACKSLASH_C ' Recommended always on for UTF
    
-   Me.SubstitutionCacheSize = 100
+   Me.MatchedEventSubstitutionCacheSize = 100
    Me.Utf = True
    Me.CheckUtfValidity = True
    Me.CaseSensitive = True
@@ -336,11 +336,11 @@ End Property
    
 
 
-Public Property Get SubstitutionCacheSize() As Long
-   SubstitutionCacheSize = m_SubstitutionCacheSize
+Public Property Get MatchedEventSubstitutionCacheSize() As Long
+   MatchedEventSubstitutionCacheSize = m_SubstitutionCacheSize
 End Property
 
-Public Property Let SubstitutionCacheSize(ByVal p_MaxCount As Long)
+Public Property Let MatchedEventSubstitutionCacheSize(ByVal p_MaxCount As Long)
    m_SubstitutionCacheSize = p_MaxCount
 End Property
 

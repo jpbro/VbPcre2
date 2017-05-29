@@ -1,9 +1,9 @@
 Attribute VB_Name = "modTests"
 Option Explicit
 
-' MIT License
-'
 ' Copyright (c) 2017 Jason Peter Brown
+'
+' MIT License
 '
 ' Permission is hereby granted, free of charge, to any person obtaining a copy
 ' of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@ Sub TestRegex()
    Dim lo_Matches As CPcreMatches
    Dim ii As Long
    
-   With lo_RegEx.RegexOptions
+   With lo_RegEx.Options.Match
       .CaseSensitive = False
    End With
    
@@ -47,7 +47,7 @@ Sub TestRegexCallout(po_Pcre As CPcre)
    Dim lo_Matches As CPcreMatches
    Dim ii As Long
    
-   With po_Pcre.RegexOptions
+   With po_Pcre.Options.Match
       .CaseSensitive = False
       .EnumerateCallouts = True
    End With
@@ -66,7 +66,7 @@ End Sub
 Sub TestRegexMatchedEvent(po_Pcre As CPcre)
    Dim lo_Matches As CPcreMatches
    
-   With po_Pcre.RegexOptions
+   With po_Pcre.Options.Match
       .CaseSensitive = False
       .GlobalSearch = True
       .MatchedEventEnabled = True
@@ -124,7 +124,7 @@ Sub TestRegex2()
    Debug.Print "PCRE Test"
       
    Set lo_RegEx2 = New CPcre
-   With lo_RegEx2.RegexOptions
+   With lo_RegEx2.Options.Match
       .CaseSensitive = False
       .GlobalSearch = True
       .Multiline = True
