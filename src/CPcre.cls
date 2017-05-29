@@ -43,6 +43,14 @@ Public Enum e_EnumerateCalloutAction
    enumcalloutaction_RaiseError = vbObjectError
 End Enum
 
+Public Enum e_SubstitutionAction
+   subaction_None ' Perform no substitution
+   subaction_Replace ' Replace the match with the supplied text
+   subaction_ReplaceAndCache  ' Replace the match with the supplied text. If a subsequent exact match is found, replace with the same cached value and skip the Matched event.
+End Enum
+
+Public Event Matched(ByRef p_MatchedText As String, ByRef p_SubstitutionAction As e_SubstitutionAction, ByRef p_Cancel As Boolean)   ' If GlobalSearch = True and EnableMatchedEvent = True then this event will be raised for each match.
+                                                                                 ' You can change p_MatchedText and set p_Replace = True to perform a substitution.
 
 Public Event CalloutEnumerated(ByVal p_CalloutNumber As Long, _
                                ByVal p_PatternPosition As Long, _
@@ -117,7 +125,13 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
    Dim l_OvectorPtr As Long
    Dim la_Ovector() As Long
    Dim l_GlobalSearch As Boolean
-   Dim l_EnumerateResult As e_EnumerateCalloutAction
+   Dim l_Cancel As Boolean
+   Dim l_EnumerateCalloutAction As e_EnumerateCalloutAction
+   Dim l_SubstitutionAction As e_SubstitutionAction
+   Dim lo_SubstitutionCache As VBA.Collection
+   Dim l_Substitute As Boolean
+   Dim l_Delta As Long
+   Dim ii As Long ' Loop counter
    
    ' Use the value of the Pattern property if option p_RegexToMatch parameter is empty
    ' Otherwise set the value of the Pattern property to the passed p_RegexToMatch value
@@ -126,6 +140,9 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
    Else
       Me.Pattern = p_RegexToMatch
    End If
+   
+   Debug.Print "Subject text: " & p_TextToSearch
+   Debug.Print "Regex: " & p_RegexToMatch
    
    ' Check if we should recompile regex
    If m_Context = 0 Then
@@ -181,9 +198,9 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
    If Me.RegexOptions.EnumerateCallouts Then
       ' Enumerate all callouts before matching
       
-      l_EnumerateResult = pcre2_callout_enumerate(l_CompiledRegex, AddressOf pcreCalloutEnumerateProc, ObjPtr(Me))
+      l_EnumerateCalloutAction = pcre2_callout_enumerate(l_CompiledRegex, AddressOf pcreCalloutEnumerateProc, ObjPtr(Me))
       
-      Select Case l_EnumerateResult
+      Select Case l_EnumerateCalloutAction
       Case enumcalloutaction_StopAll
          ' Cancel matching.
          Debug.Assert False
@@ -191,7 +208,7 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
          
       Case Is < 0
          ' Raise error
-         Err.Raise l_EnumerateResult, , "Host reported error."
+         Err.Raise l_EnumerateCalloutAction, , "Host reported error."
          
       End Select
    End If
@@ -215,17 +232,106 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
             ' Shouldn't happen!
             Err.Raise vbObjectError, , "Ovector pointer could not be retrieved!"
          End If
-            
+         
+         Dim l_SearchChunk As String
+         Dim l_MatchStart As Long
          Dim l_MatchLen As Long
+         Dim l_MatchText As String
+         Dim l_OriginalMatchText As String
          
-         CopyMemory l_MatchLen, ByVal (l_OvectorPtr + l_MatchCount * 2), 4
+         CopyMemory l_MatchStart, ByVal l_OvectorPtr, 4
+         CopyMemory l_MatchLen, ByVal (l_OvectorPtr + 4), 4
+         l_MatchLen = l_MatchLen - l_MatchStart
          
-         Execute.Add Left$(p_TextToSearch, l_MatchLen), l_OvectorPtr, l_MatchCount
-      
-         If l_GlobalSearch Then
-            p_TextToSearch = Mid$(p_TextToSearch, l_MatchLen + 1)
+         l_SearchChunk = Left$(p_TextToSearch, l_MatchStart + l_MatchLen)
+         l_MatchText = Mid$(l_SearchChunk, l_MatchStart + 1)
+         l_OriginalMatchText = l_MatchText
+         
+         If Me.RegexOptions.MatchedEventEnabled Then
+            ' Check if we have a substitution stored in our cache
+            l_Substitute = False
+            
+            If lo_SubstitutionCache Is Nothing Then
+               Set lo_SubstitutionCache = New VBA.Collection
+               l_ErrorNumber = 5 ' Simulate not found in collection error
+            Else
+               On Error Resume Next
+               Err.Clear
+               l_MatchText = lo_SubstitutionCache.Item("KEY_" & l_OriginalMatchText)
+               l_ErrorNumber = Err.Number
+               On Error GoTo ErrorHandler
+            End If
+            
+            If l_ErrorNumber = 0 Then
+               Debug.Print "Substitution cache hit for " & l_OriginalMatchText & ". Skipping Matched event and using cached value."
+               
+               l_Substitute = True
+            Else
+               ' Could not find substitution match in cache
+               ' Raise the Matched event since we found a match
+               
+               l_ErrorNumber = 0
+               
+               l_SubstitutionAction = subaction_None
+               RaiseEvent Matched(l_MatchText, l_SubstitutionAction, l_Cancel)
+               
+               If l_Cancel Then GoTo NoErrorCleanup   ' Received instruction to cancel matching
+               
+               Select Case l_SubstitutionAction
+               Case subaction_ReplaceAndCache, subaction_Replace
+                  If l_SubstitutionAction = subaction_ReplaceAndCache Then
+                     lo_SubstitutionCache.Add l_MatchText, "KEY_" & l_OriginalMatchText
+                        
+                     ' Make sure cache doesn't get too big
+                     For ii = Me.RegexOptions.SubstitutionCacheSize - 1 To lo_SubstitutionCache.Count - 1
+                        lo_SubstitutionCache.Remove 0
+                     Next ii
+                  
+                  End If
+                  
+                  l_Substitute = True
+                  
+               Case subaction_None
+                  ' Make sure match text is unchanged.
+                  l_MatchText = l_OriginalMatchText
+               
+               Case Else
+                  Err.Raise vbObjectError, , "Unknown substitution action: " & l_MatchText
+               End Select
+            End If
          End If
-      
+         
+         ReDim la_Ovector(2 * l_MatchCount - 1)
+
+         CopyMemory la_Ovector(0), ByVal l_OvectorPtr, 2 * l_MatchCount * 4
+         
+         If l_Substitute Then
+            l_Delta = Len(l_MatchText) - l_MatchLen
+            
+            If l_Delta > 0 Then
+               p_TextToSearch = p_TextToSearch & Space$(l_Delta)
+               
+               Mid$(p_TextToSearch, l_MatchStart + l_MatchLen + l_Delta + 1) = Mid$(p_TextToSearch, l_MatchStart + l_MatchLen + 1)
+               
+            End If
+            
+            Mid$(p_TextToSearch, l_MatchStart + 1) = l_MatchText
+         
+            If l_Delta < 0 Then
+               Mid$(p_TextToSearch, l_MatchStart + l_MatchLen + l_Delta + 1) = Mid$(p_TextToSearch, l_MatchStart + l_MatchLen + 1)
+               p_TextToSearch = Left$(p_TextToSearch, Len(p_TextToSearch) + l_Delta)
+            End If
+         
+         Else
+            Execute.Add l_SearchChunk, la_Ovector, l_MatchCount
+         
+            If l_GlobalSearch Then
+               p_TextToSearch = Mid$(p_TextToSearch, l_MatchStart + l_MatchLen + 1)
+            End If
+         
+         End If
+         
+         
       Case Else
          ' Uhoh! We need to handle these
          Err.Raise vbObjectError - l_MatchCount, , "PCRE Match Error: " & l_MatchCount
@@ -235,6 +341,8 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
    
 NoErrorCleanup:
    On Error Resume Next
+   
+   Execute.AppendText p_TextToSearch
    
    l_ErrorNumber = 0
    l_ErrorDesc = ""
@@ -313,5 +421,4 @@ End Property
 Public Property Let Pattern(ByVal p_RegexPattern As String)
    m_Pattern = p_RegexPattern
 End Property
-
 

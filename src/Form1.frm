@@ -45,10 +45,29 @@ Attribute mo_Pcre.VB_VarHelpID = -1
 Private Sub Form_Load()
    Set mo_Pcre = New CPcre
    
-   TestRegexCallout mo_Pcre
+   TestRegexMatchedEvent mo_Pcre
+      
    Unload Me
 End Sub
 
-Private Sub mo_Pcre_CalloutEnumerateReceived(ByVal p_CalloutNumber As Long, ByVal p_PatternPosition As Long, ByVal p_NextItemLength As Long, ByVal p_CalloutOffset As Long, ByVal p_CalloutLength As Long, ByVal p_CalloutString As String, p_ReturnValue As Long)
+
+Private Sub mo_Pcre_CalloutEnumerated(ByVal p_CalloutNumber As Long, ByVal p_PatternPosition As Long, ByVal p_NextItemLength As Long, ByVal p_CalloutOffset As Long, ByVal p_CalloutLength As Long, ByVal p_CalloutString As String, p_Action As e_EnumerateCalloutAction)
    Debug.Print "Callout #" & p_CalloutNumber & " Received in " & Me.Name
+End Sub
+
+Private Sub mo_Pcre_Matched(p_MatchedText As String, p_SubstitutionAction As e_SubstitutionAction, p_Cancel As Boolean)
+   Static s_MatchCount As Long
+   
+   Debug.Print "MATCH FOUND: " & p_MatchedText
+   
+   Select Case p_MatchedText
+   Case "CB9CBC213211BF4BA026FED4B1AC5CB2"
+      p_MatchedText = "match substitution"
+      p_SubstitutionAction = subaction_ReplaceAndCache
+      
+   Case "F8CEC6F354497746990BFB3A6A72BD06"
+      s_MatchCount = s_MatchCount + 1
+      p_MatchedText = s_MatchCount
+      p_SubstitutionAction = subaction_Replace
+   End Select
 End Sub

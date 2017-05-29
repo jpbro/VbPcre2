@@ -1,7 +1,8 @@
-Form1 = 0, 0, 0, 0, C, 0, 0, 0, 0, C
-modTests = 0, 0, 0, 0, C
-CPcre = 0, 0, 0, 0, C
-CPcreMatch = 0, 0, 0, 0, C
-CPcreRegexOptions = 0, 0, 0, 0, C
-CPcreMatches = 0, 0, 0, 0, C
-modPcre = 0, 0, 0, 0, C
+Form1 = 108, 160, 1269, 707, , 81, 120, 1242, 667, C
+modTests = 162, 240, 1323, 787, 
+CPcre = 81, 120, 1242, 667, 
+CPcreMatch = 0, 0, 1161, 547, 
+CPcreRegexOptions = 54, 80, 1215, 627, 
+CPcreMatches = 162, 240, 1323, 787, 
+modPcre = 54, 80, 1215, 627, C
+modStrings = 0, 0, 0, 0, C

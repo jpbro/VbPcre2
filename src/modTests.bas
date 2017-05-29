@@ -35,7 +35,7 @@ Sub TestRegex()
    Set lo_Matches = lo_RegEx.Execute("This is a test of matching stuff!", "(test)\s*.+\s*(Mat)")
    If lo_Matches.Count > 0 Then
       For ii = 0 To lo_Matches.Count - 1
-         Debug.Print "Match #" & ii + 1 & ": " & lo_Matches(ii).Value
+         Debug.Print "Match #" & ii + 1 & ": " & lo_Matches(ii).MatchedText
       Next ii
       
    Else
@@ -55,12 +55,26 @@ Sub TestRegexCallout(po_Pcre As CPcre)
    Set lo_Matches = po_Pcre.Execute("This is a test of matching stuff!", "(?C""test"")test\s*.+\s*(Mat)")
    If lo_Matches.Count > 0 Then
       For ii = 0 To lo_Matches.Count - 1
-         Debug.Print "Match #" & ii + 1 & ": " & lo_Matches(ii).Value
+         Debug.Print "Match #" & ii + 1 & ": " & lo_Matches(ii).MatchedText
       Next ii
       
    Else
       Debug.Print "No matches found!"
    End If
+End Sub
+
+Sub TestRegexMatchedEvent(po_Pcre As CPcre)
+   Dim lo_Matches As CPcreMatches
+   
+   With po_Pcre.RegexOptions
+      .CaseSensitive = False
+      .GlobalSearch = True
+      .MatchedEventEnabled = True
+   End With
+   
+   Set lo_Matches = po_Pcre.Execute("This is a test of CB9CBC213211BF4BA026FED4B1AC5CB2. Did you know that CB9CBC213211BF4BA026FED4B1AC5CB2 can be cached for performance, or re-run for each match. F8CEC6F354497746990BFB3A6A72BD06, F8CEC6F354497746990BFB3A6A72BD06, F8CEC6F354497746990BFB3A6A72BD06. You can also ignore matches: E175FA8438E00D47B2AA52CAD413FB6A.", "[a-fA-F0-9]{32}")
+
+   Debug.Print "Result text: " & lo_Matches.Text
 End Sub
 
 Sub TestRegex2()
@@ -121,7 +135,7 @@ Sub TestRegex2()
    Debug.Print "Match Count: " & lo_Matches2.Count
    
    For Each lo_Match2 In lo_Matches2
-      Debug.Print "Match #" & ii + 1 & ": " & lo_Match2.Value
+      Debug.Print "Match #" & ii + 1 & ": " & lo_Match2.MatchedText
       Debug.Print "Sub Match Count: " & lo_Match2.SubMatchCount
       For jj = 0 To lo_Match2.SubMatchCount - 1
          Debug.Print "SubMatch # " & jj + 1 & ": " & lo_Match2.SubMatchValue(jj)

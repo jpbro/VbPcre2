@@ -35,12 +35,18 @@ Option Explicit
 ' OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ' SOFTWARE.
 
-Private m_TextToSearch As String
+Private m_SearchedText As String
 Private ma_Ovector() As Long
 Private m_Count As Long
 
-Public Property Get Value() As String
-   Value = Me.SubMatchValue(-1)
+Friend Property Get SearchedText() As String
+   ' The full text searched up to the end of the matched text
+   SearchedText = m_SearchedText
+End Property
+
+Public Property Get MatchedText() As String
+   ' The matched chunk of text in the searched text
+   MatchedText = Me.SubMatchValue(-1)
 End Property
 
 Public Property Get SubMatchCount() As Long
@@ -52,17 +58,15 @@ End Property
 Public Property Get SubMatchValue(ByVal p_ZeroBasedSubMatchIndex As Long) As String
    p_ZeroBasedSubMatchIndex = 2 * (p_ZeroBasedSubMatchIndex + 1)
    
-   SubMatchValue = Mid$(m_TextToSearch, ma_Ovector(p_ZeroBasedSubMatchIndex) + 1, ma_Ovector(p_ZeroBasedSubMatchIndex + 1) - ma_Ovector(p_ZeroBasedSubMatchIndex))
+   SubMatchValue = Mid$(m_SearchedText, ma_Ovector(p_ZeroBasedSubMatchIndex) + 1, ma_Ovector(p_ZeroBasedSubMatchIndex + 1) - ma_Ovector(p_ZeroBasedSubMatchIndex))
 End Property
 
-Friend Sub Init(ByVal p_TextToSearch As String, ByVal p_OvectorPointer As Long, ByVal p_MatchCount As Long)
+Friend Sub Init(ByVal p_SearchedText As String, pa_OvectorArray() As Long, ByVal p_MatchCount As Long)
    If p_MatchCount > 0 Then
-      ReDim ma_Ovector(2 * p_MatchCount - 1)
-   
-      CopyMemory ma_Ovector(0), ByVal p_OvectorPointer, 2 * p_MatchCount * 4
+      ma_Ovector = pa_OvectorArray
    End If
    
-   m_TextToSearch = p_TextToSearch
+   m_SearchedText = p_SearchedText
    
    m_Count = p_MatchCount
 End Sub

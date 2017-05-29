@@ -68,12 +68,15 @@ Private Const PCRE2_UCP                 As Long = &H20000
 Private m_Options As Long
 Private m_Global As Boolean
 Private m_EnumerateCallouts As Boolean
+Private m_MatchedEventEnabled As Boolean
+Private m_SubstitutionCacheSize As Long
 
 Private Sub Class_Initialize()
    ' Setup default options
    
    m_Options = PCRE2_NEVER_BACKSLASH_C ' Recommended always on for UTF
    
+   Me.SubstitutionCacheSize = 100
    Me.Utf = True
    Me.CheckUtfValidity = True
    Me.CaseSensitive = True
@@ -319,4 +322,25 @@ Public Property Let EnumerateCallouts(ByVal p_Enabled As Boolean)
    m_EnumerateCallouts = p_Enabled
 End Property
    
+
+' Set MatchedEventEnabled to True to enable the Matched() event to be raised after each match is found
+' NOTE: This only makes sense to use when the Global property is also set to True.
+' Set MatchedEventEnabled to False to skip raising the Matched event - should improve performance if you don't need the event.
+Public Property Get MatchedEventEnabled() As Boolean
+   MatchedEventEnabled = m_MatchedEventEnabled
+End Property
+   
+Public Property Let MatchedEventEnabled(ByVal p_Enabled As Boolean)
+   m_MatchedEventEnabled = p_Enabled
+End Property
+   
+
+
+Public Property Get SubstitutionCacheSize() As Long
+   SubstitutionCacheSize = m_SubstitutionCacheSize
+End Property
+
+Public Property Let SubstitutionCacheSize(ByVal p_MaxCount As Long)
+   m_SubstitutionCacheSize = p_MaxCount
+End Property
 

@@ -36,6 +36,7 @@ Option Explicit
 ' SOFTWARE.
 
 Private mo_Matches As VBA.Collection
+Private m_AppendedText As String
 
 Public Property Get Count() As Long
    Count = mo_Matches.Count
@@ -52,12 +53,28 @@ Attribute Enumerator.VB_MemberFlags = "40"
    Set Enumerator = mo_Matches.[_NewEnum]
 End Function
 
-Friend Sub Add(ByVal p_TextToSearch As String, ByVal p_OvectorPointer As Long, ByVal p_MatchCount As Long)
+Public Property Get Text() As String
+   Dim lo_Match As CPcreMatch
+   
+   For Each lo_Match In mo_Matches
+      Text = Text & lo_Match.SearchedText
+   Next lo_Match
+   
+   If LenB(m_AppendedText) > 0 Then
+      Text = Text & m_AppendedText
+   End If
+End Property
+
+Friend Sub AppendText(ByVal p_Text As String)
+   m_AppendedText = m_AppendedText & p_Text
+End Sub
+
+Friend Sub Add(ByVal p_TextToSearch As String, pa_OvectorArray() As Long, ByVal p_MatchCount As Long)
    Dim lo_Match As CPcreMatch
    
    Set lo_Match = New CPcreMatch
    
-   lo_Match.Init p_TextToSearch, p_OvectorPointer, p_MatchCount
+   lo_Match.Init p_TextToSearch, pa_OvectorArray, p_MatchCount
    
    mo_Matches.Add lo_Match
 End Sub
