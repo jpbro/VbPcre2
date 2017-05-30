@@ -1,14 +1,143 @@
 VERSION 5.00
+Object = "{3B7C8863-D78F-101B-B9B5-04021C009402}#1.2#0"; "richtx32.ocx"
 Begin VB.Form Form1 
-   Caption         =   "Form1"
-   ClientHeight    =   3024
+   Caption         =   "VbPcre2 Test"
+   ClientHeight    =   6408
    ClientLeft      =   120
    ClientTop       =   456
-   ClientWidth     =   4560
+   ClientWidth     =   11592
+   BeginProperty Font 
+      Name            =   "Tahoma"
+      Size            =   7.8
+      Charset         =   0
+      Weight          =   400
+      Underline       =   0   'False
+      Italic          =   0   'False
+      Strikethrough   =   0   'False
+   EndProperty
    LinkTopic       =   "Form1"
-   ScaleHeight     =   3024
-   ScaleWidth      =   4560
-   StartUpPosition =   3  'Windows Default
+   ScaleHeight     =   6408
+   ScaleWidth      =   11592
+   StartUpPosition =   2  'CenterScreen
+   Begin RichTextLib.RichTextBox rtbTestResults 
+      Height          =   3252
+      Index           =   0
+      Left            =   144
+      TabIndex        =   1
+      Top             =   1440
+      Width           =   5052
+      _ExtentX        =   8911
+      _ExtentY        =   5736
+      _Version        =   393217
+      ReadOnly        =   -1  'True
+      ScrollBars      =   2
+      DisableNoScroll =   -1  'True
+      Appearance      =   0
+      TextRTF         =   $"Form1.frx":0000
+   End
+   Begin VB.CommandButton cmdRunTests 
+      Caption         =   "Run Tests"
+      BeginProperty Font 
+         Name            =   "Tahoma"
+         Size            =   13.8
+         Charset         =   0
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   660
+      Left            =   4392
+      TabIndex        =   0
+      Top             =   216
+      Width           =   2748
+   End
+   Begin RichTextLib.RichTextBox rtbTestResults 
+      Height          =   3252
+      Index           =   1
+      Left            =   5904
+      TabIndex        =   2
+      Top             =   1476
+      Width           =   5052
+      _ExtentX        =   8911
+      _ExtentY        =   5736
+      _Version        =   393217
+      ReadOnly        =   -1  'True
+      ScrollBars      =   2
+      DisableNoScroll =   -1  'True
+      Appearance      =   0
+      TextRTF         =   $"Form1.frx":007B
+   End
+   Begin VB.Label Label 
+      Caption         =   "VB Script"
+      BeginProperty Font 
+         Name            =   "Tahoma"
+         Size            =   10.2
+         Charset         =   0
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   372
+      Index           =   1
+      Left            =   5976
+      TabIndex        =   6
+      Top             =   1080
+      Width           =   1560
+   End
+   Begin VB.Label Label 
+      Caption         =   "VbPcre2"
+      BeginProperty Font 
+         Name            =   "Tahoma"
+         Size            =   10.2
+         Charset         =   0
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   372
+      Index           =   0
+      Left            =   216
+      TabIndex        =   5
+      Top             =   1080
+      Width           =   1560
+   End
+   Begin VB.Label lblRunTime 
+      BeginProperty Font 
+         Name            =   "Tahoma"
+         Size            =   12
+         Charset         =   0
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   516
+      Index           =   1
+      Left            =   6012
+      TabIndex        =   4
+      Top             =   4932
+      Width           =   4800
+   End
+   Begin VB.Label lblRunTime 
+      BeginProperty Font 
+         Name            =   "Tahoma"
+         Size            =   12
+         Charset         =   0
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   516
+      Index           =   0
+      Left            =   360
+      TabIndex        =   3
+      Top             =   4896
+      Width           =   4800
+   End
 End
 Attribute VB_Name = "Form1"
 Attribute VB_GlobalNameSpace = False
@@ -42,10 +171,41 @@ Option Explicit
 Private WithEvents mo_Pcre As CPcre
 Attribute mo_Pcre.VB_VarHelpID = -1
 
-Private Sub Form_Load()
-   TestRegexReplace
+Private Sub cmdRunTests_Click()
+   Dim l_Subject As String
+   Dim l_Regex As String
    
-   Unload Me
+   l_Subject = "This is a test of the emergency broadcast system." & vbNewLine & "This is only a TEST!"
+   l_Regex = "test"
+   
+   Me.rtbTestResults(0).Text = testRunMatch(New CPcre, l_Subject, l_Regex, False, False)
+   Me.rtbTestResults(1).Text = testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, False, False)
+   
+   If Me.rtbTestResults(0).Text = Me.rtbTestResults(1).Text Then
+      MsgBox "Test results match :)", vbOKOnly, "Result Match"
+   Else
+      MsgBox "Test results DO NOT MATCH!", vbExclamation + vbOKOnly, "Result Mismatch!"
+   End If
+End Sub
+
+Private Sub Form_Resize()
+   Me.cmdRunTests.Left = Me.ScaleWidth / 2 - Me.cmdRunTests.Width / 2
+   
+   With Me.rtbTestResults(0)
+      .Move .Left, .Top, Me.ScaleWidth / 2 - .Left * 2, Me.ScaleHeight - .Top - Me.lblRunTime(0).Height - .Left * 3
+   End With
+
+   With Me.rtbTestResults(1)
+      .Move Me.ScaleWidth - Me.rtbTestResults(0).Width - Me.rtbTestResults(0).Left, Me.rtbTestResults(0).Top, Me.rtbTestResults(0).Width, Me.rtbTestResults(0).Height
+   End With
+
+   With Me.lblRunTime(0)
+      .Move Me.rtbTestResults(0).Left, Me.ScaleHeight - .Height - Me.rtbTestResults(0).Left, Me.rtbTestResults(0).Width, .Height
+   End With
+
+   With Me.lblRunTime(1)
+      .Move Me.rtbTestResults(1).Left, Me.ScaleHeight - .Height - Me.rtbTestResults(0).Left, Me.rtbTestResults(1).Width, .Height
+   End With
 End Sub
 
 Private Sub mo_Pcre_CalloutEnumerated(ByVal p_CalloutNumber As Long, ByVal p_PatternPosition As Long, ByVal p_NextItemLength As Long, ByVal p_CalloutOffset As Long, ByVal p_CalloutLength As Long, ByVal p_CalloutString As String, p_Action As e_EnumerateCalloutAction)

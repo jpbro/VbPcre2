@@ -41,6 +41,7 @@ End Sub
 Sub TestRegexMatch()
    Dim lo_RegEx As New CPcre
    Dim lo_Matches As CPcreMatches
+   Dim lo_Match As CPcreMatch
    Dim ii As Long
 
    With lo_RegEx.Options.Compile
@@ -170,3 +171,52 @@ Sub TestRegex2()
    Next lo_Match2
    Debug.Print
 End Sub
+
+Public Function testRunMatch(po_RegexObject As Object, ByVal p_Subject As String, ByVal p_Regex As String, ByVal p_Global As Boolean, ByVal p_IgnoreCase As Boolean) As String
+   ' Return log of results
+   
+   Dim lo_Matches As Object
+   Dim lo_Match As Object
+   Dim l_Match As String
+   Dim ii As Long
+   Dim l_Log As String
+   
+   l_Log = vbNewLine & "---------------------------------------------" & vbNewLine
+   l_Log = l_Log & "Running testRunMatch test." & vbNewLine
+   l_Log = l_Log & "---------------------------------------------" & vbNewLine & vbNewLine
+   
+   l_Log = l_Log & "Subject: " & p_Subject & vbNewLine
+   l_Log = l_Log & "Regex: " & p_Regex & vbNewLine
+   l_Log = l_Log & "Is Global: " & p_Global & vbNewLine
+   l_Log = l_Log & "Ignore Case: " & p_IgnoreCase & vbNewLine & vbNewLine
+   
+   With po_RegexObject
+      .Pattern = p_Regex
+      
+      If TypeOf po_RegexObject Is CPcre Then
+         .GlobalSearch = p_Global
+      Else
+         .Global = p_Global
+      End If
+      
+      .IgnoreCase = p_IgnoreCase
+      
+      Set lo_Matches = .Execute(p_Subject)
+   End With
+
+   l_Log = l_Log & "Matches Count: " & lo_Matches.Count & vbNewLine & vbNewLine
+   
+   For Each lo_Match In lo_Matches
+      If TypeOf lo_Match Is CPcreMatch Then
+         l_Match = lo_Match.MatchedText
+      Else
+         l_Match = lo_Match.Value
+      End If
+      
+      l_Log = l_Log & "Matched Text: " & l_Match & vbNewLine & vbNewLine
+   Next lo_Match
+   
+   l_Log = l_Log & "---------------------------------------------" & vbNewLine & vbNewLine
+   
+   testRunMatch = l_Log
+End Function
