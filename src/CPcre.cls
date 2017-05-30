@@ -65,15 +65,15 @@ Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal p_Hmodule As Long
 
 Private Declare Function pcre2_compile_context_create Lib "pcre2-16.dll" Alias "_pcre2_compile_context_create_16@4" (Optional ByVal p_MallocFunc As Long = 0&) As Long
 Private Declare Sub pcre2_compile_context_free Lib "pcre2-16.dll" Alias "_pcre2_compile_context_free_16@4" (ByVal p_ContextHandle As Long)
-Private Declare Function pcre2_compile Lib "pcre2-16.dll" Alias "_pcre2_compile_16@24" (ByVal p_RegexStringPointer As Long, ByVal p_RegexStringLength As Long, ByVal p_CompileOptions As PCRE_CompileOptions, ByRef p_ErrorCode As PCRE_ReturnCode, ByRef p_CharWhereErrorOccured As Long, Optional ByVal p_ContextHandle As Long = &H0) As Long
+Private Declare Function pcre2_compile Lib "pcre2-16.dll" Alias "_pcre2_compile_16@24" (ByVal p_RegexStringPointer As Long, ByVal p_RegexStringLength As Long, ByVal p_CompileOptions As PCRE_CompileOptions, ByRef p_ErrorCode As PCRE_ReturnCode, ByRef p_CharWhereErrorOccured As Long, Optional ByVal p_CompileContextHandle As Long = &H0) As Long
 Private Declare Sub pcre2_code_free Lib "pcre2-16.dll" Alias "_pcre2_code_free_16@4" (ByVal p_CompiledRegecHandle As Long)
 Private Declare Function pcre2_match_data_create_from_pattern Lib "pcre2-16.dll" Alias "_pcre2_match_data_create_from_pattern_16@8" (ByVal p_CompiledRegexHandle As Long, ByVal p_Options As Long) As Long
-Private Declare Function pcre2_match Lib "pcre2-16.dll" Alias "_pcre2_match_16@28" (ByVal p_CompiledRegexHandle As Long, ByVal p_StringToSearchPointer As Long, ByVal p_StringToSearchLength As Long, ByVal p_StartSearchOffset As Long, ByVal p_MatchOptions As Long, ByVal p_MatchDataHandle As Long, ByVal p_ContextHandle As Long) As Long
+Private Declare Function pcre2_match Lib "pcre2-16.dll" Alias "_pcre2_match_16@28" (ByVal p_CompiledRegexHandle As Long, ByVal p_StringToSearchPointer As Long, ByVal p_StringToSearchLength As Long, ByVal p_StartSearchOffset As Long, ByVal p_MatchOptions As Long, ByVal p_MatchDataHandle As Long, ByVal p_MatchContextHandle As Long) As Long
 Private Declare Function pcre2_get_ovector_pointer Lib "pcre2-16.dll" Alias "_pcre2_get_ovector_pointer_16@4" (ByVal p_MatchDataHandle As Long) As Long
 Private Declare Sub pcre2_match_data_free Lib "pcre2-16.dll" Alias "_pcre2_match_data_free_16@4" (ByVal p_MatchDataHandle As Long)
 Private Declare Function pcre2_set_callout Lib "pcre2-16.dll" Alias "_pcre2_set_callout_16@12" (ByVal p_MatchDataHandle As Long, ByVal p_CalloutAddress As Long, ByRef p_CalloutDataPointer As Long) As Long
 Private Declare Function pcre2_callout_enumerate Lib "pcre2-16.dll" Alias "_pcre2_callout_enumerate_16@12" (ByVal p_CompiledRegexHandle As Long, ByVal p_CalloutAddress As Long, ByRef p_CalloutDataPointer As Long) As Long
-Private Declare Function pcre2_substitute Lib "pcre2-16.dll" Alias "_pcre2_substitute_16@44" (ByVal p_CompiledRegexHandle As Long, ByVal p_StringToSearchPointer As Long, ByVal p_StringToSearchLength As Long, ByVal p_StartSearchOffset As Long, ByVal p_MatchOptions As Long, ByVal p_MatchDataHandle As Long, ByVal p_ContextHandle As Long, ByVal p_ReplacementTextPointer As Long, ByVal p_ReplacementTextLength As Long, ByVal p_OutputBufferPointer As Long, ByRef p_OutputBufferLength As Long) As Long
+Private Declare Function pcre2_substitute Lib "pcre2-16.dll" Alias "_pcre2_substitute_16@44" (ByVal p_CompiledRegexHandle As Long, ByVal p_StringToSearchPointer As Long, ByVal p_StringToSearchLength As Long, ByVal p_StartSearchOffset As Long, ByVal p_MatchOptions As Long, ByVal p_MatchDataHandle As Long, ByVal p_MatchContextHandle As Long, ByVal p_ReplacementTextPointer As Long, ByVal p_ReplacementTextLength As Long, ByVal p_OutputBufferPointer As Long, ByRef p_OutputBufferLength As Long) As Long
 
 Private Const PCRE2_ERROR_NOMATCH As Long = -1
 
@@ -85,9 +85,9 @@ Private m_Hlib As Long
 Private mo_Options As CPcreOptions
 
 ' Cached Handles
-Private m_CompiledRegex As Long
-Private m_Context As Long
-Private m_MatchData As Long
+Private m_CompiledRegexHandle As Long
+Private m_CompileContextHandle As Long
+Private m_MatchDataHandle As Long
 
 Private m_Pattern As String   ' Last used regex pattern
 
@@ -139,9 +139,9 @@ Private Function InitRegex(ByVal p_RegexToMatch As String) As Boolean
    
    ' Check if we should recompile regex
    l_Recompile = True
-   If m_Context <> 0 Then
+   If m_CompileContextHandle <> 0 Then
       ' Context exists
-      If m_CompiledRegex <> 0 Then
+      If m_CompiledRegexHandle <> 0 Then
          ' Compile regex exists
          If l_CompileOptionsFlags = s_LastCompileOptionsFlags Then
             If Len(s_LastRegex) = Len(p_RegexToMatch) Then
@@ -158,27 +158,27 @@ Private Function InitRegex(ByVal p_RegexToMatch As String) As Boolean
       
       Cleanup
       
-      m_Context = pcre2_compile_context_create(0)
-      If m_Context = 0 Then Err.Raise "Could not compile PCRE context! Last DLL Error: " & Err.LastDllError
+      m_CompileContextHandle = pcre2_compile_context_create(0)
+      If m_CompileContextHandle = 0 Then Err.Raise "Could not compile PCRE context! Last DLL Error: " & Err.LastDllError
       
-      m_CompiledRegex = pcre2_compile(StrPtr(p_RegexToMatch), Len(p_RegexToMatch), l_CompileOptionsFlags, l_ErrorCode, l_ErrorPosition, m_Context)
-      If m_CompiledRegex = 0 Then Err.Raise vbObjectError, , "Could not compile regex! Regex: " & p_RegexToMatch & vbNewLine & "Errorcode: " & l_ErrorCode & ", Error Position: " & l_ErrorPosition
+      m_CompiledRegexHandle = pcre2_compile(StrPtr(p_RegexToMatch), Len(p_RegexToMatch), l_CompileOptionsFlags, l_ErrorCode, l_ErrorPosition, m_CompileContextHandle)
+      If m_CompiledRegexHandle = 0 Then Err.Raise vbObjectError, , "Could not compile regex! Regex: " & p_RegexToMatch & vbNewLine & "Errorcode: " & l_ErrorCode & ", Error Position: " & l_ErrorPosition
       
       s_LastCompileOptionsFlags = l_CompileOptionsFlags
       s_LastRegex = p_RegexToMatch
    End If
 
    ' Create match data space - can we cache and reuse this on subsequent runs?
-   If m_MatchData <> 0 Then pcre2_match_data_free m_MatchData: m_MatchData = 0
+   If m_MatchDataHandle <> 0 Then pcre2_match_data_free m_MatchDataHandle: m_MatchDataHandle = 0
    
-   m_MatchData = pcre2_match_data_create_from_pattern(m_CompiledRegex, 0)
+   m_MatchDataHandle = pcre2_match_data_create_from_pattern(m_CompiledRegexHandle, 0)
    
-   If m_MatchData = 0 Then Err.Raise vbObjectError, , "Could not allocate match data! Last DLL Error: " & Err.LastDllError
+   If m_MatchDataHandle = 0 Then Err.Raise vbObjectError, , "Could not allocate match data! Last DLL Error: " & Err.LastDllError
 
    If Me.Options.General.EnumerateCallouts Then
       ' Enumerate all callouts before matching
       
-      l_EnumerateCalloutAction = pcre2_callout_enumerate(m_CompiledRegex, AddressOf pcreCalloutEnumerateProc, ObjPtr(Me))
+      l_EnumerateCalloutAction = pcre2_callout_enumerate(m_CompiledRegexHandle, AddressOf pcreCalloutEnumerateProc, ObjPtr(Me))
       
       Select Case l_EnumerateCalloutAction
       Case enumcalloutaction_StopAll
@@ -222,7 +222,7 @@ Public Function Replace(ByVal p_TextToSearch As String, ByVal p_ReplaceWithText 
    
    ' Attempt substitution
    Do
-      l_ReplaceResult = pcre2_substitute(m_CompiledRegex, StrPtr(p_TextToSearch), Len(p_TextToSearch), 0, l_ReplaceOptionsFlags, m_MatchData, 0, StrPtr(p_ReplaceWithText), Len(p_ReplaceWithText), StrPtr(l_OutputBuffer), l_OutputBufferLength)
+      l_ReplaceResult = pcre2_substitute(m_CompiledRegexHandle, StrPtr(p_TextToSearch), Len(p_TextToSearch), 0, l_ReplaceOptionsFlags, m_MatchDataHandle, 0, StrPtr(p_ReplaceWithText), Len(p_ReplaceWithText), StrPtr(l_OutputBuffer), l_OutputBufferLength)
       
       Select Case l_ReplaceResult
       Case PCRE_RC_ERROR_NOMEMORY
@@ -255,7 +255,7 @@ Cleanup:
    On Error Resume Next
 
    ' Free match data if necessary
-   If m_MatchData <> 0 Then pcre2_match_data_free m_MatchData: m_MatchData = 0
+   If m_MatchDataHandle <> 0 Then pcre2_match_data_free m_MatchDataHandle: m_MatchDataHandle = 0
 
    If l_ErrorNumber <> 0 Then
       Cleanup
@@ -300,7 +300,7 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
    Set Execute = New CPcreMatches
    
    Do
-      l_MatchCount = pcre2_match(m_CompiledRegex, StrPtr(p_TextToSearch), Len(p_TextToSearch), 0, 0, m_MatchData, 0)
+      l_MatchCount = pcre2_match(m_CompiledRegexHandle, StrPtr(p_TextToSearch), Len(p_TextToSearch), 0, 0, m_MatchDataHandle, 0)
    
       Select Case l_MatchCount
       Case PCRE2_ERROR_NOMATCH
@@ -308,7 +308,7 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
       
       Case Is > 0
          ' Number of matches, store information about matches
-         l_OvectorPtr = pcre2_get_ovector_pointer(m_MatchData)
+         l_OvectorPtr = pcre2_get_ovector_pointer(m_MatchDataHandle)
          
          If l_OvectorPtr = 0 Then
             ' Shouldn't happen!
@@ -433,7 +433,7 @@ Cleanup:
    On Error Resume Next
 
    ' Free match data if necessary
-   If m_MatchData <> 0 Then pcre2_match_data_free m_MatchData: m_MatchData = 0
+   If m_MatchDataHandle <> 0 Then pcre2_match_data_free m_MatchDataHandle: m_MatchDataHandle = 0
 
    If l_ErrorNumber <> 0 Then
       Cleanup
@@ -455,10 +455,10 @@ End Function
 
 Private Sub Cleanup()
    'Free compiled regex before exiting
-   If m_CompiledRegex <> 0 Then pcre2_code_free m_CompiledRegex: m_CompiledRegex = 0
+   If m_CompiledRegexHandle <> 0 Then pcre2_code_free m_CompiledRegexHandle: m_CompiledRegexHandle = 0
 
    'Free compile context before exiting
-   If m_Context <> 0 Then pcre2_compile_context_free m_Context: m_Context = 0
+   If m_CompileContextHandle <> 0 Then pcre2_compile_context_free m_CompileContextHandle: m_CompileContextHandle = 0
 End Sub
 
 Friend Function RaiseCalloutEnumeratedEvent(pt_CalloutEnumerateBlock As pcreCalloutEnumerateBlock) As Long
