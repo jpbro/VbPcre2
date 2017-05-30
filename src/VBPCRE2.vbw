@@ -1,10 +1,10 @@
 Form1 = 108, 160, 1269, 707, C, 81, 120, 1242, 667, C
 modTests = 162, 240, 1323, 787, C
-CPcre = 81, 120, 1242, 667, C
+CPcre = 81, 120, 1242, 667, Z
 CPcreMatch = 0, 0, 1161, 547, C
-CPcreOptionsMatch = 54, 80, 1215, 627, C
+CPcreOptionsMatch = 54, 80, 1215, 627, 
 CPcreMatches = 162, 240, 1323, 787, C
 modPcre = 54, 80, 1215, 627, C
 modStrings = 0, 0, 1161, 547, C
-CPcreOptionsReplace = 108, 160, 1269, 707, C
+CPcreOptionsReplace = 108, 160, 1269, 707, 
 CPcreOptions = 135, 200, 1296, 747, C
