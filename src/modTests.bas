@@ -23,7 +23,22 @@ Option Explicit
 ' OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ' SOFTWARE.
 
-Sub TestRegex()
+Sub TestRegexReplace()
+   Dim lo_RegEx As New CPcre
+   Dim lo_Matches As CPcreMatches
+   Dim ii As Long
+
+   With lo_RegEx.Options.Compile
+      .CaseSensitive = False
+   End With
+   With lo_RegEx.Options.General
+      .GlobalSearch = True
+   End With
+   
+   Debug.Print "Replace result: " & lo_RegEx.Replace("This is a test of matching test stuff!", "XXXXXXX", "test")
+End Sub
+
+Sub TestRegexMatch()
    Dim lo_RegEx As New CPcre
    Dim lo_Matches As CPcreMatches
    Dim ii As Long

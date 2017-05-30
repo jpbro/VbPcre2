@@ -73,7 +73,7 @@ Private Declare Function pcre2_get_ovector_pointer Lib "pcre2-16.dll" Alias "_pc
 Private Declare Sub pcre2_match_data_free Lib "pcre2-16.dll" Alias "_pcre2_match_data_free_16@4" (ByVal p_MatchDataHandle As Long)
 Private Declare Function pcre2_set_callout Lib "pcre2-16.dll" Alias "_pcre2_set_callout_16@12" (ByVal p_MatchDataHandle As Long, ByVal p_CalloutAddress As Long, ByRef p_CalloutDataPointer As Long) As Long
 Private Declare Function pcre2_callout_enumerate Lib "pcre2-16.dll" Alias "_pcre2_callout_enumerate_16@12" (ByVal p_CompiledRegexHandle As Long, ByVal p_CalloutAddress As Long, ByRef p_CalloutDataPointer As Long) As Long
-Private Declare Function pcre2_substitute Lib "pcre2-16.dll" Alias "_pcre2_substitute_16@48" (ByVal p_CompiledRegexHandle As Long, ByVal p_StringToSearchPointer As Long, ByVal p_StringToSearchLength As Long, ByVal p_StartSearchOffset As Long, ByVal p_MatchOptions As Long, ByVal p_MatchDataHandle As Long, ByVal p_ContextHandle As Long, ByVal p_ReplacementTextPointer As Long, ByVal p_ReplacementTextLength As Long, ByVal p_OutputBufferPointer As Long, byrefp_OutputBufferLength As Long) As Long
+Private Declare Function pcre2_substitute Lib "pcre2-16.dll" Alias "_pcre2_substitute_16@44" (ByVal p_CompiledRegexHandle As Long, ByVal p_StringToSearchPointer As Long, ByVal p_StringToSearchLength As Long, ByVal p_StartSearchOffset As Long, ByVal p_MatchOptions As Long, ByVal p_MatchDataHandle As Long, ByVal p_ContextHandle As Long, ByVal p_ReplacementTextPointer As Long, ByVal p_ReplacementTextLength As Long, ByVal p_OutputBufferPointer As Long, ByRef p_OutputBufferLength As Long) As Long
 
 Private Const PCRE2_ERROR_NOMATCH As Long = -1
 
@@ -199,6 +199,10 @@ Public Function Replace(ByVal p_TextToSearch As String, ByVal p_ReplaceWithText 
    Dim l_ErrorNumber As Long
    Dim l_ErrorDesc As String
    Dim l_ReplaceOptionsFlags As Long
+   Dim l_ReplaceCount As Long
+   Dim l_OutputBuffer As String
+   Dim l_OutputBufferLength As Long
+   Dim l_ReplaceResult As Long
    
    ' Returns a string with requested substitutions made (if found).
    ' Make sure GlobalSearch = True to change all matches.
@@ -209,7 +213,37 @@ Public Function Replace(ByVal p_TextToSearch As String, ByVal p_ReplaceWithText 
 
    l_ReplaceOptionsFlags = Me.Options.Replace.OptionFlags
    
+   ' Check if we should add the PCRE2_SUBSTITUTE_GLOBAL flag
    If Me.Options.General.GlobalSearch Then l_ReplaceOptionsFlags = l_ReplaceOptionsFlags Or PCRE2_SUBSTITUTE_GLOBAL
+
+   ' Prepare the output buffer (start at 2X size for a better chance to avoid insufficient space)
+   l_OutputBuffer = Space$(Len(p_TextToSearch) * 2)
+   l_OutputBufferLength = Len(l_OutputBuffer)
+   
+   ' Attempt substitution
+   Do
+      l_ReplaceResult = pcre2_substitute(m_CompiledRegex, StrPtr(p_TextToSearch), Len(p_TextToSearch), 0, l_ReplaceOptionsFlags, m_MatchData, 0, StrPtr(p_ReplaceWithText), Len(p_ReplaceWithText), StrPtr(l_OutputBuffer), l_OutputBufferLength)
+      
+      Select Case l_ReplaceResult
+      Case PCRE_RC_ERROR_NOMEMORY
+         ' Buffer too small - increase size.
+         
+         l_OutputBufferLength = Len(l_OutputBuffer) * 2
+         l_OutputBuffer = Space$(l_OutputBufferLength)
+      
+      Case Is >= 0
+         ' Finished
+         
+      Case Else
+         Err.Raise vbObjectError - l_ReplaceResult, , "Replace error #" & l_ReplaceResult
+         
+      End Select
+      
+   Loop While l_ReplaceResult = PCRE_RC_ERROR_NOMEMORY
+   
+   Debug.Print "Replacement result: " & l_ReplaceCount   ' NOTE: Documentation says this will return the number of replacements on success, but it always seems to be 0?
+
+   Replace = Left$(l_OutputBuffer, l_OutputBufferLength)
 
 NoErrorCleanup:
    On Error Resume Next
