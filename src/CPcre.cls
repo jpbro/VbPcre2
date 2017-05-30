@@ -109,17 +109,16 @@ Private Sub Class_Terminate()
    End If
 End Sub
 
-Private Sub InitRegex(ByVal p_RegexToMatch As String, ByVal p_OptionFlags As Long)
+Private Sub InitRegex(ByVal p_RegexToMatch As String)
    Static s_LastRegex As String
-   Static s_LastRegexOptions As Long
+   Static s_LastCompileOptionsFlags As Long
    
    ' Returns CPcreMatches object. If MatchCount = 0 then no matches.
 
    Dim l_ErrorCode As Long
    Dim l_ErrorPosition As Long
-   Dim l_ErrorNumber As Long
-   Dim l_ErrorDesc As String
    Dim l_Recompile As Boolean
+   Dim l_CompileOptionsFlags As Long
    
    ' Use the value of the Pattern property if option p_RegexToMatch parameter is empty
    ' Otherwise set the value of the Pattern property to the passed p_RegexToMatch value
@@ -129,21 +128,18 @@ Private Sub InitRegex(ByVal p_RegexToMatch As String, ByVal p_OptionFlags As Lon
       Me.Pattern = p_RegexToMatch
    End If
    
+   l_CompileOptionsFlags = Me.Options.Compile.OptionFlags
+   
    ' Check if we should recompile regex
-   If m_Context = 0 Then
-      l_Recompile = True
-   Else
-      If m_CompiledRegex = 0 Then
-         l_Recompile = True
-      Else
-         If p_OptionFlags <> s_LastRegexOptions Then
-            l_Recompile = True
-         Else
-            If Len(s_LastRegex) <> Len(p_RegexToMatch) Then
-               l_Recompile = True
-            Else
-               If s_LastRegex <> p_RegexToMatch Then
-                  l_Recompile = True
+   l_Recompile = True
+   If m_Context <> 0 Then
+      ' Context exists
+      If m_CompiledRegex <> 0 Then
+         ' Compile regex exists
+         If l_CompileOptionsFlags = s_LastCompileOptionsFlags Then
+            If Len(s_LastRegex) = Len(p_RegexToMatch) Then
+               If s_LastRegex = p_RegexToMatch Then
+                  l_Recompile = False
                End If
             End If
          End If
@@ -158,14 +154,14 @@ Private Sub InitRegex(ByVal p_RegexToMatch As String, ByVal p_OptionFlags As Lon
       m_Context = pcre2_compile_context_create(0)
       If m_Context = 0 Then Err.Raise "Could not compile PCRE context! Last DLL Error: " & Err.LastDllError
       
-      m_CompiledRegex = pcre2_compile(StrPtr(p_RegexToMatch), Len(p_RegexToMatch), p_OptionFlags, l_ErrorCode, l_ErrorPosition, m_Context)
+      m_CompiledRegex = pcre2_compile(StrPtr(p_RegexToMatch), Len(p_RegexToMatch), l_CompileOptionsFlags, l_ErrorCode, l_ErrorPosition, m_Context)
       If m_CompiledRegex = 0 Then Err.Raise vbObjectError, , "Could not compile regex! Regex: " & p_RegexToMatch & vbNewLine & "Errorcode: " & l_ErrorCode & ", Error Position: " & l_ErrorPosition
       
-      s_LastRegexOptions = p_OptionFlags
+      s_LastCompileOptionsFlags = l_CompileOptionsFlags
       s_LastRegex = p_RegexToMatch
    End If
 
-   ' Create match data space
+   ' Create match data space - can we cache and reuse this on subsequent runs?
    If m_MatchData <> 0 Then pcre2_match_data_free m_MatchData: m_MatchData = 0
    
    m_MatchData = pcre2_match_data_create_from_pattern(m_CompiledRegex, 0)
@@ -177,16 +173,10 @@ Public Function Replace(ByVal p_TextToSearch As String, ByVal p_ReplaceWithText 
 End Function
 
 Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMatch As String) As CPcreMatches
-   Static s_LastRegex As String
-   Static s_LastRegexOptions As Long
-   
    ' Returns CPcreMatches object. If MatchCount = 0 then no matches.
 
-   Dim l_ErrorCode As Long
-   Dim l_ErrorPosition As Long
    Dim l_ErrorNumber As Long
    Dim l_ErrorDesc As String
-   Dim l_Recompile As Boolean
    Dim l_MatchCount As Long
    Dim l_OvectorPtr As Long
    Dim la_Ovector() As Long
@@ -210,9 +200,9 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
    Debug.Print "Subject text: " & p_TextToSearch
    Debug.Print "Regex: " & p_RegexToMatch
    
-   InitRegex p_RegexToMatch, Me.Options.Match.OptionFlags
+   InitRegex p_RegexToMatch
    
-   If Me.Options.Match.EnumerateCallouts Then
+   If Me.Options.General.EnumerateCallouts Then
       ' Enumerate all callouts before matching
       
       l_EnumerateCalloutAction = pcre2_callout_enumerate(m_CompiledRegex, AddressOf pcreCalloutEnumerateProc, ObjPtr(Me))
@@ -230,7 +220,7 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
       End Select
    End If
    
-   l_GlobalSearch = Me.Options.Match.GlobalSearch
+   l_GlobalSearch = Me.Options.General.GlobalSearch
    
    Set Execute = New CPcreMatches
    
@@ -415,19 +405,19 @@ End Function
 ' To more closely match VBScript Regex Object Model. Unfortunately we can't have a property call Global
 ' because it is a reserved keyword, so we can match VBScript Regex OM exactly :(
 Public Property Let GlobalSearch(ByVal p_Enable As Boolean)
-   Me.Options.Match.GlobalSearch = p_Enable
+   Me.Options.General.GlobalSearch = p_Enable
 End Property
 
 Public Property Get GlobalSearch() As Boolean
-   GlobalSearch = Me.Options.Match.GlobalSearch
+   GlobalSearch = Me.Options.General.GlobalSearch
 End Property
 
 Public Property Let IgnoreCase(ByVal p_Enable As Boolean)
-   Me.Options.Match.CaseSensitive = Not p_Enable
+   Me.Options.Compile.CaseSensitive = Not p_Enable
 End Property
 
 Public Property Get IgnoreCase() As Boolean
-   IgnoreCase = Not Me.Options.Match.CaseSensitive
+   IgnoreCase = Not Me.Options.Compile.CaseSensitive
 End Property
 
 ' Pattern property added to more closely mimic VBScript Regex object model

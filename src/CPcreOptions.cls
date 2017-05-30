@@ -13,13 +13,22 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
-Public Function Replace() As CPcreOptionsReplace
-   Static so_Options As CPcreOptionsReplace
+Public Function Compile() As CPcreOptionsCompile
+   Static so_Options As CPcreOptionsCompile
 
    If so_Options Is Nothing Then
-      Set so_Options = New CPcreOptionsReplace
+      Set so_Options = New CPcreOptionsCompile
    End If
-   Set Replace = so_Options
+   Set Compile = so_Options
+End Function
+
+Public Function General() As CPcreOptionsGeneral
+   Static so_Options As CPcreOptionsGeneral
+
+   If so_Options Is Nothing Then
+      Set so_Options = New CPcreOptionsGeneral
+   End If
+   Set General = so_Options
 End Function
 
 Public Function Match() As CPcreOptionsMatch
@@ -29,5 +38,14 @@ Public Function Match() As CPcreOptionsMatch
       Set so_Options = New CPcreOptionsMatch
    End If
    Set Match = so_Options
+End Function
+
+Public Function Replace() As CPcreOptionsReplace
+   Static so_Options As CPcreOptionsReplace
+
+   If so_Options Is Nothing Then
+      Set so_Options = New CPcreOptionsReplace
+   End If
+   Set Replace = so_Options
 End Function
 

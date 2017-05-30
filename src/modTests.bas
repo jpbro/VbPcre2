@@ -27,8 +27,8 @@ Sub TestRegex()
    Dim lo_RegEx As New CPcre
    Dim lo_Matches As CPcreMatches
    Dim ii As Long
-   
-   With lo_RegEx.Options.Match
+
+   With lo_RegEx.Options.Compile
       .CaseSensitive = False
    End With
    
@@ -47,8 +47,11 @@ Sub TestRegexCallout(po_Pcre As CPcre)
    Dim lo_Matches As CPcreMatches
    Dim ii As Long
    
-   With po_Pcre.Options.Match
+   With po_Pcre.Options.Compile
       .CaseSensitive = False
+   End With
+   
+   With po_Pcre.Options.General
       .EnumerateCallouts = True
    End With
    
@@ -66,9 +69,15 @@ End Sub
 Sub TestRegexMatchedEvent(po_Pcre As CPcre)
    Dim lo_Matches As CPcreMatches
    
-   With po_Pcre.Options.Match
+   With po_Pcre.Options.Compile
       .CaseSensitive = False
+   End With
+   
+   With po_Pcre.Options.General
       .GlobalSearch = True
+   End With
+   
+   With po_Pcre.Options.Match
       .MatchedEventEnabled = True
    End With
    
@@ -124,10 +133,13 @@ Sub TestRegex2()
    Debug.Print "PCRE Test"
       
    Set lo_RegEx2 = New CPcre
-   With lo_RegEx2.Options.Match
+   With lo_RegEx2.Options.Compile
       .CaseSensitive = False
-      .GlobalSearch = True
       .Multiline = True
+   End With
+      
+   With lo_RegEx2.Options.General
+      .GlobalSearch = True
    End With
 
    Set lo_Matches2 = lo_RegEx2.Execute(l_SubjectText, l_Regex)

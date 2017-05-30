@@ -6,7 +6,7 @@ BEGIN
   DataSourceBehavior  = 0  'vbNone
   MTSTransactionMode  = 0  'NotAnMTSObject
 END
-Attribute VB_Name = "CPcreOptionsMatch"
+Attribute VB_Name = "CPcreOptionsGeneral"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
@@ -38,44 +38,27 @@ Option Explicit
 ' Some documentation from http://www.pcre.org/current/doc/html/pcre2api.html
 ' Some additional documentation for PCRE2 Regex options by Seongmyun Cho taken from https://github.com/xnsystems/kpcre/wiki
 
-Private m_Options As Long
-Private m_MatchedEventEnabled As Boolean
-Private m_SubstitutionCacheSize As Long
+Private m_Global As Boolean
+Private m_EnumerateCallouts As Boolean
 
-Private Sub Class_Initialize()
-   Me.MatchedEventSubstitutionCacheSize = 100
-End Sub
-
-Friend Function OptionFlags() As Long
-   OptionFlags = m_Options
-End Function
-
-Private Sub AddOrRemoveRegexOptionFlag(ByVal p_Flag As Long, ByVal p_Add As Boolean)
-   If p_Add Then
-      m_Options = m_Options Or p_Flag
-   Else
-      m_Options = m_Options And Not p_Flag
-   End If
-End Sub
-
-
-' Set MatchedEventEnabled to True to enable the Matched() event to be raised after each match is found
-' NOTE: This only makes sense to use when the Global property is also set to True.
-' Set MatchedEventEnabled to False to skip raising the Matched event - should improve performance if you don't need the event.
-Public Property Get MatchedEventEnabled() As Boolean
-   MatchedEventEnabled = m_MatchedEventEnabled
+' Set GlobalSearch to True to find all possible matches
+' Set GlobalSearch to False to stop search after first match.
+Public Property Get GlobalSearch() As Boolean
+   GlobalSearch = m_Global
 End Property
    
-Public Property Let MatchedEventEnabled(ByVal p_Enabled As Boolean)
-   m_MatchedEventEnabled = p_Enabled
+Public Property Let GlobalSearch(ByVal p_Enabled As Boolean)
+   m_Global = p_Enabled
 End Property
    
 
-Public Property Get MatchedEventSubstitutionCacheSize() As Long
-   MatchedEventSubstitutionCacheSize = m_SubstitutionCacheSize
+' Set EnumerateCallouts to True to enumerate all callouts in a pattern before matching
+' Set EnumerateCallouts to False to skip callout enumeration
+Public Property Get EnumerateCallouts() As Boolean
+   EnumerateCallouts = m_EnumerateCallouts
 End Property
-
-Public Property Let MatchedEventSubstitutionCacheSize(ByVal p_MaxCount As Long)
-   m_SubstitutionCacheSize = p_MaxCount
+   
+Public Property Let EnumerateCallouts(ByVal p_Enabled As Boolean)
+   m_EnumerateCallouts = p_Enabled
 End Property
 
