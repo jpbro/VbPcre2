@@ -174,6 +174,7 @@ Attribute mo_Pcre.VB_VarHelpID = -1
 Private Sub cmdRunTests_Click()
    Dim l_Subject As String
    Dim l_Regex As String
+   Dim l_Replace As String
    
    ' Matches should be found in these test. Results depend on Global and IgnoreCase parameter values
    l_Subject = "This is a test of the emergency broadcast system." & vbNewLine & "This is only a TEST!" & vbNewLine & "If this were not a test, then really bad things have happened."
@@ -209,6 +210,24 @@ Private Sub cmdRunTests_Click()
    Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, False, True)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, False, True)
    
+   ' Substitution Tests
+   l_Regex = "test"
+   l_Replace = "<REDACTED>"
+   
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunReplace(New CPcre, l_Subject, l_Regex, l_Replace, False, False)
+   Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunReplace(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, l_Replace, False, False)
+   
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunReplace(New CPcre, l_Subject, l_Regex, l_Replace, True, False)
+   Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunReplace(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, l_Replace, True, False)
+   
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunReplace(New CPcre, l_Subject, l_Regex, l_Replace, True, True)
+   Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunReplace(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, l_Replace, True, True)
+   
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunReplace(New CPcre, l_Subject, l_Regex, l_Replace, False, True)
+   Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunReplace(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, l_Replace, False, True)
+      
+      
+   ' Report Results
    If Me.rtbTestResults(0).Text = Me.rtbTestResults(1).Text Then
       MsgBox "Test results match :)", vbOKOnly, "Result Match"
    Else

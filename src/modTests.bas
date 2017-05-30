@@ -138,9 +138,9 @@ Sub TestRegex2()
          
    For Each lo_Match In lo_Matches
       Debug.Print "Match #" & ii + 1 & ": " & lo_Match.Value
-      Debug.Print "Sub Match Count: " & lo_Match.submatches.Count
-      For jj = 0 To lo_Match.submatches.Count - 1
-         Debug.Print "SubMatch # " & jj + 1 & ": " & lo_Match.submatches(jj)
+      Debug.Print "Sub Match Count: " & lo_Match.SubMatches.Count
+      For jj = 0 To lo_Match.SubMatches.Count - 1
+         Debug.Print "SubMatch # " & jj + 1 & ": " & lo_Match.SubMatches(jj)
       Next jj
    Next lo_Match
    Debug.Print
@@ -220,7 +220,7 @@ Public Function testRunMatch(po_RegexObject As Object, ByVal p_Subject As String
       If TypeOf lo_Match Is CPcreMatch Then
          l_SubMatchCount = lo_Match.SubMatchCount
       Else
-         l_SubMatchCount = lo_Match.submatches.Count
+         l_SubMatchCount = lo_Match.SubMatches.Count
       End If
       
       l_Log = l_Log & "Sub-match Count: " & l_SubMatchCount & vbNewLine
@@ -229,7 +229,7 @@ Public Function testRunMatch(po_RegexObject As Object, ByVal p_Subject As String
          If TypeOf lo_Match Is CPcreMatch Then
             l_SubMatch = lo_Match.SubMatchValue(ii)
          Else
-            l_SubMatch = lo_Match.submatches(ii)
+            l_SubMatch = lo_Match.SubMatches(ii)
          End If
          
          l_Log = l_Log & "Sub-match #" & l_SubMatchCount + 1 & ": " & l_SubMatch & vbNewLine
@@ -242,3 +242,42 @@ Public Function testRunMatch(po_RegexObject As Object, ByVal p_Subject As String
    
    testRunMatch = l_Log
 End Function
+
+Public Function testRunReplace(po_RegexObject As Object, ByVal p_Subject As String, ByVal p_Regex As String, ByVal p_ReplaceWithText As String, ByVal p_Global As Boolean, ByVal p_IgnoreCase As Boolean) As String
+   ' Return log of results
+   
+   Dim l_Result As String
+   Dim l_Log As String
+   Dim ii As Long
+   
+   l_Log = vbNewLine & "---------------------------------------------" & vbNewLine
+   l_Log = l_Log & "Running testRunReplace test." & vbNewLine
+   l_Log = l_Log & "---------------------------------------------" & vbNewLine & vbNewLine
+   
+   l_Log = l_Log & "Subject: " & p_Subject & vbNewLine
+   l_Log = l_Log & "Regex: " & p_Regex & vbNewLine
+   l_Log = l_Log & "Replace with Text: " & p_ReplaceWithText & vbNewLine
+   l_Log = l_Log & "Is Global: " & p_Global & vbNewLine
+   l_Log = l_Log & "Ignore Case: " & p_IgnoreCase & vbNewLine & vbNewLine
+   
+   With po_RegexObject
+      .Pattern = p_Regex
+      
+      If TypeOf po_RegexObject Is CPcre Then
+         .GlobalSearch = p_Global
+      Else
+         .Global = p_Global
+      End If
+      
+      .IgnoreCase = p_IgnoreCase
+      
+      l_Result = .Replace(p_Subject, p_ReplaceWithText)
+   End With
+
+   l_Log = l_Log & "Replacement Result: " & l_Result & vbNewLine & vbNewLine
+   
+   l_Log = l_Log & "---------------------------------------------" & vbNewLine & vbNewLine
+   
+   testRunReplace = l_Log
+End Function
+
