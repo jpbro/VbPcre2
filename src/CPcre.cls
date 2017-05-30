@@ -85,6 +85,7 @@ Private mo_Options As CPcreOptions
 ' Cached Handles
 Private m_CompiledRegex As Long
 Private m_Context As Long
+Private m_MatchData As Long
 
 Private m_Pattern As String   ' Last used regex pattern
 
@@ -108,8 +109,72 @@ Private Sub Class_Terminate()
    End If
 End Sub
 
+Private Sub InitRegex(ByVal p_RegexToMatch As String, ByVal p_OptionFlags As Long)
+   Static s_LastRegex As String
+   Static s_LastRegexOptions As Long
+   
+   ' Returns CPcreMatches object. If MatchCount = 0 then no matches.
+
+   Dim l_ErrorCode As Long
+   Dim l_ErrorPosition As Long
+   Dim l_ErrorNumber As Long
+   Dim l_ErrorDesc As String
+   Dim l_Recompile As Boolean
+   
+   ' Use the value of the Pattern property if option p_RegexToMatch parameter is empty
+   ' Otherwise set the value of the Pattern property to the passed p_RegexToMatch value
+   If p_RegexToMatch = "" Then
+      p_RegexToMatch = Me.Pattern
+   Else
+      Me.Pattern = p_RegexToMatch
+   End If
+   
+   ' Check if we should recompile regex
+   If m_Context = 0 Then
+      l_Recompile = True
+   Else
+      If m_CompiledRegex = 0 Then
+         l_Recompile = True
+      Else
+         If p_OptionFlags <> s_LastRegexOptions Then
+            l_Recompile = True
+         Else
+            If Len(s_LastRegex) <> Len(p_RegexToMatch) Then
+               l_Recompile = True
+            Else
+               If s_LastRegex <> p_RegexToMatch Then
+                  l_Recompile = True
+               End If
+            End If
+         End If
+      End If
+   End If
+   
+   If l_Recompile Then
+      'Compile a source string.  Because we are using the 16-bit version, we can just pass StrPtr
+      
+      Cleanup
+      
+      m_Context = pcre2_compile_context_create(0)
+      If l_Context = 0 Then Err.Raise "Could not compile PCRE context! Last DLL Error: " & Err.LastDllError
+      
+      m_CompiledRegex = pcre2_compile(StrPtr(p_RegexToMatch), Len(p_RegexToMatch), p_OptionFlags, l_ErrorCode, l_ErrorPosition, l_Context)
+      If m_CompiledRegex = 0 Then Err.Raise vbObjectError, , "Could not compile regex! Regex: " & p_RegexToMatch & vbNewLine & "Errorcode: " & l_ErrorCode & ", Error Position: " & l_ErrorPosition
+      
+      s_LastRegexOptions = p_OptionFlags
+      s_LastRegex = p_RegexToMatch
+      m_CompiledRegex = l_CompiledRegex
+   End If
+
+   ' Create match data space
+   If m_MatchData <> 0 Then pcre2_match_data_free m_MatchData: m_MatchData = 0
+   
+   m_MatchData = pcre2_match_data_create_from_pattern(l_CompiledRegex, 0)
+   
+   If m_MatchData = 0 Then Err.Raise vbObjectError, , "Could not allocate match data! Last DLL Error: " & Err.LastDllError
+End Sub
+
 Public Function Replace(ByVal p_TextToSearch As String, ByVal p_ReplaceWithText As String, Optional ByVal p_RegexToMatch As String) As String
-   ' TODO: Impliment pcre2_substitute
 End Function
 
 Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMatch As String) As CPcreMatches
@@ -118,14 +183,11 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
    
    ' Returns CPcreMatches object. If MatchCount = 0 then no matches.
 
-   Dim l_Context As Long
-   Dim l_CompiledRegex As Long
    Dim l_ErrorCode As Long
    Dim l_ErrorPosition As Long
    Dim l_ErrorNumber As Long
    Dim l_ErrorDesc As String
    Dim l_Recompile As Boolean
-   Dim l_MatchData As Long
    Dim l_MatchCount As Long
    Dim l_OvectorPtr As Long
    Dim la_Ovector() As Long
@@ -149,57 +211,8 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
    Debug.Print "Subject text: " & p_TextToSearch
    Debug.Print "Regex: " & p_RegexToMatch
    
-   ' Check if we should recompile regex
-   If m_Context = 0 Then
-      l_Recompile = True
-   Else
-      If m_CompiledRegex = 0 Then
-         l_Recompile = True
-      Else
-         If Me.Options.Match.OptionFlags <> s_LastRegexOptions Then
-            l_Recompile = True
-         Else
-            If Len(s_LastRegex) <> Len(p_RegexToMatch) Then
-               l_Recompile = True
-            Else
-               If s_LastRegex <> p_RegexToMatch Then
-                  l_Recompile = True
-               End If
-            End If
-         End If
-      End If
-   End If
+   InitRegex p_RegexToMatch, Me.Options.Match.OptionFlags
    
-   If l_Recompile Then
-      'Compile a source string.  Because we are using the 16-bit version, we can just pass StrPtr
-      
-      Cleanup
-      
-      l_Context = pcre2_compile_context_create(0)
-      If l_Context = 0 Then Err.Raise "Could not compile PCRE context! Last DLL Error: " & Err.LastDllError
-      
-      m_Context = l_Context
-      
-      l_CompiledRegex = pcre2_compile(StrPtr(p_RegexToMatch), Len(p_RegexToMatch), Me.Options.Match.OptionFlags, l_ErrorCode, l_ErrorPosition, l_Context)
-      
-      If l_CompiledRegex = 0 Then Err.Raise vbObjectError, , "Could not compile regex! Regex: " & p_RegexToMatch & vbNewLine & "Errorcode: " & l_ErrorCode & ", Error Position: " & l_ErrorPosition
-      
-      s_LastRegexOptions = Me.Options.Match.OptionFlags
-      s_LastRegex = p_RegexToMatch
-      m_CompiledRegex = l_CompiledRegex
-      
-   Else
-      ' Use cached regex and context handles
-      l_CompiledRegex = m_CompiledRegex
-      l_Context = m_Context
-      
-   End If
-
-   ' Create match data space
-   l_MatchData = pcre2_match_data_create_from_pattern(l_CompiledRegex, 0)
-   
-   If l_MatchData = 0 Then Err.Raise vbObjectError, , "Could not allocate match data! Last DLL Error: " & Err.LastDllError
-
    If Me.Options.Match.EnumerateCallouts Then
       ' Enumerate all callouts before matching
       
@@ -223,7 +236,7 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
    Set Execute = New CPcreMatches
    
    Do
-      l_MatchCount = pcre2_match(l_CompiledRegex, StrPtr(p_TextToSearch), Len(p_TextToSearch), 0, 0, l_MatchData, 0)
+      l_MatchCount = pcre2_match(m_CompiledRegex, StrPtr(p_TextToSearch), Len(p_TextToSearch), 0, 0, m_MatchData, 0)
    
       Select Case l_MatchCount
       Case PCRE2_ERROR_NOMATCH
@@ -356,7 +369,7 @@ Cleanup:
    On Error Resume Next
 
    ' Free match data if necessary
-   If l_MatchData <> 0 Then pcre2_match_data_free l_MatchData: l_MatchData = 0
+   If m_MatchData <> 0 Then pcre2_match_data_free m_MatchData: m_MatchData = 0
 
    If l_ErrorNumber <> 0 Then
       Cleanup
