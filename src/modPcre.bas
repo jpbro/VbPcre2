@@ -165,6 +165,15 @@ Public Enum PCRE_CompileOptions
    PCRE_CO_USE_OFFSET_LIMIT = &H800000         '   J M D
 End Enum
 
+Public Const PCRE2_ANCHORED             As Long = &H80000000
+Public Const PCRE2_NO_UTF_CHECK        As Long = &H40000000
+Public Const PCRE2_NOTBOL As Long = &H1
+Public Const PCRE2_NOTEOL As Long = &H2
+Public Const PCRE2_NOTEMPTY  As Long = &H4
+Public Const PCRE2_NOTEMPTY_ATSTART As Long = &H8
+Public Const PCRE2_PARTIAL_SOFT As Long = &H10
+Public Const PCRE2_PARTIAL_HARD As Long = &H20
+
 Public Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 
 Public Function pcreCalloutEnumerateProc(ByVal p_CalloutEnumerateBlockPointer As Long, ByRef p_UserData As Long) As Long

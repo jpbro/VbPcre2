@@ -38,8 +38,6 @@ Option Explicit
 ' Some documentation from http://www.pcre.org/current/doc/html/pcre2api.html
 ' Some additional documentation for PCRE2 Regex options by Seongmyun Cho taken from https://github.com/xnsystems/kpcre/wiki
 
-Private Const PCRE2_ANCHORED            As Long = &H80000000
-Private Const PCRE2_NO_UTF_CHECK        As Long = &H40000000
 Private Const PCRE2_ALLOW_EMPTY_CLASS   As Long = &H1
 Private Const PCRE2_ALT_BSUX            As Long = &H2
 Private Const PCRE2_CASELESS            As Long = &H8

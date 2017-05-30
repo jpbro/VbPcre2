@@ -43,7 +43,13 @@ Private m_MatchedEventEnabled As Boolean
 Private m_SubstitutionCacheSize As Long
 
 Private Sub Class_Initialize()
+   ' Setup default values
    Me.MatchedEventSubstitutionCacheSize = 100
+   Me.SubjectIsBeginningOfLine = True
+   Me.SubjectIsEndOfLine = True
+   Me.MatchIfEmpty = True
+   Me.MatchIfEmptyAtStart = True
+   Me.PerformUtfCheck = True
 End Sub
 
 Friend Function OptionFlags() As Long
@@ -58,6 +64,56 @@ Private Sub AddOrRemoveRegexOptionFlag(ByVal p_Flag As Long, ByVal p_Add As Bool
    End If
 End Sub
 
+' If ANCHORED option is TRUE, the pattern is forced to be "anchored", that is, it is constrained to match only
+' at the first matching point in the string that is being searched.
+Public Property Get Anchored() As Boolean
+   Anchored = m_Options And PCRE2_ANCHORED
+End Property
+
+Public Property Let Anchored(ByVal p_Enabled As Boolean)
+   AddOrRemoveRegexOptionFlag PCRE2_ANCHORED, p_Enabled
+End Property
+
+
+Public Property Get SubjectIsBeginningOfLine() As Boolean
+   SubjectIsBeginningOfLine = m_Options And Not PCRE2_NOTBOL
+End Property
+
+Public Property Let SubjectIsBeginningOfLine(ByVal p_Enabled As Boolean)
+   AddOrRemoveRegexOptionFlag PCRE2_NOTBOL, Not p_Enabled
+End Property
+
+Public Property Get SubjectIsEndOfLine() As Boolean
+   SubjectIsEndOfLine = m_Options And Not PCRE2_NOTEOL
+End Property
+
+Public Property Let SubjectIsEndOfLine(ByVal p_Enabled As Boolean)
+   AddOrRemoveRegexOptionFlag PCRE2_NOTEOL, Not p_Enabled
+End Property
+
+Public Property Get MatchIfEmpty() As Boolean
+   MatchIfEmpty = m_Options And Not PCRE2_NOTEMPTY
+End Property
+
+Public Property Let MatchIfEmpty(ByVal p_Enabled As Boolean)
+   AddOrRemoveRegexOptionFlag PCRE2_NOTEMPTY, Not p_Enabled
+End Property
+
+Public Property Get MatchIfEmptyAtStart() As Boolean
+   MatchIfEmptyAtStart = m_Options And Not PCRE2_NOTEMPTY_ATSTART
+End Property
+
+Public Property Let MatchIfEmptyAtStart(ByVal p_Enabled As Boolean)
+   AddOrRemoveRegexOptionFlag PCRE2_NOTEMPTY_ATSTART, Not p_Enabled
+End Property
+
+Public Property Get PerformUtfCheck() As Boolean
+   PerformUtfCheck = m_Options And Not PCRE2_NO_UTF_CHECK
+End Property
+
+Public Property Let PerformUtfCheck(ByVal p_Enabled As Boolean)
+   AddOrRemoveRegexOptionFlag PCRE2_NO_UTF_CHECK, Not p_Enabled
+End Property
 
 ' Set MatchedEventEnabled to True to enable the Matched() event to be raised after each match is found
 ' NOTE: This only makes sense to use when the Global property is also set to True.
