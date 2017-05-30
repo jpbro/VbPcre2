@@ -38,8 +38,6 @@ Option Explicit
 ' Some documentation from http://www.pcre.org/current/doc/html/pcre2api.html
 ' Some additional documentation for PCRE2 Regex options by Seongmyun Cho taken from https://github.com/xnsystems/kpcre/wiki
 
-Private Const PCRE2_SUBSTITUTE_GLOBAL As Long = &H100
-
 Private m_Options As Long
 
 Friend Function OptionFlags() As Long
@@ -53,16 +51,4 @@ Private Sub AddOrRemoveRegexOptionFlag(ByVal p_Flag As Long, ByVal p_Add As Bool
       m_Options = m_Options And Not p_Flag
    End If
 End Sub
-
-' Set GlobalReplace to TRUE to allow duplicate named sub-patterns.
-' Set to FALSE to raise an error when duplicate subpattern names are encountered.
-Public Property Get GlobalReplace() As Boolean
-   GlobalReplace = m_Options And PCRE2_SUBSTITUTE_GLOBAL
-End Property
-
-Public Property Let GlobalReplace(ByVal p_Enabled As Boolean)
-   AddOrRemoveRegexOptionFlag PCRE2_SUBSTITUTE_GLOBAL, p_Enabled
-End Property
-
-
 
