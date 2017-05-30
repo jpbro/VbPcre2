@@ -1,5 +1,5 @@
 # VbPcre2
-PCRE2 Wrapper for VB6
+PCRE2 Regular Expression (Regex) Library Wrapper for Visual Basic 6 (VB6)
 
 This software is completely experimental at this point, and not recommended for any use.
 
