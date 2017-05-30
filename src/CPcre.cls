@@ -77,6 +77,8 @@ Private Declare Function pcre2_substitute Lib "pcre2-16.dll" Alias "_pcre2_subst
 
 Private Const PCRE2_ERROR_NOMATCH As Long = -1
 
+Private Const PCRE2_SUBSTITUTE_GLOBAL As Long = &H100
+
 Private m_Hlib As Long
 
 ' Options
@@ -109,16 +111,19 @@ Private Sub Class_Terminate()
    End If
 End Sub
 
-Private Sub InitRegex(ByVal p_RegexToMatch As String)
+Private Function InitRegex(ByVal p_RegexToMatch As String) As Boolean
    Static s_LastRegex As String
    Static s_LastCompileOptionsFlags As Long
    
-   ' Returns CPcreMatches object. If MatchCount = 0 then no matches.
-
+   ' Returns TRUE if we should continue with match/replace
+   ' Returns FALSE if we should abort with no error (host cancelled).
+   
    Dim l_ErrorCode As Long
    Dim l_ErrorPosition As Long
    Dim l_Recompile As Boolean
    Dim l_CompileOptionsFlags As Long
+   Dim l_EnumerateCalloutAction As e_EnumerateCalloutAction
+   Dim l_Cancel As Boolean
    
    ' Use the value of the Pattern property if option p_RegexToMatch parameter is empty
    ' Otherwise set the value of the Pattern property to the passed p_RegexToMatch value
@@ -127,6 +132,8 @@ Private Sub InitRegex(ByVal p_RegexToMatch As String)
    Else
       Me.Pattern = p_RegexToMatch
    End If
+      
+   Debug.Print "Regex: " & p_RegexToMatch
    
    l_CompileOptionsFlags = Me.Options.Compile.OptionFlags
    
@@ -167,9 +174,71 @@ Private Sub InitRegex(ByVal p_RegexToMatch As String)
    m_MatchData = pcre2_match_data_create_from_pattern(m_CompiledRegex, 0)
    
    If m_MatchData = 0 Then Err.Raise vbObjectError, , "Could not allocate match data! Last DLL Error: " & Err.LastDllError
-End Sub
+
+   If Me.Options.General.EnumerateCallouts Then
+      ' Enumerate all callouts before matching
+      
+      l_EnumerateCalloutAction = pcre2_callout_enumerate(m_CompiledRegex, AddressOf pcreCalloutEnumerateProc, ObjPtr(Me))
+      
+      Select Case l_EnumerateCalloutAction
+      Case enumcalloutaction_StopAll
+         ' Cancel matching.
+         l_Cancel = True
+         
+      Case Is < 0
+         ' Raise error
+         Err.Raise l_EnumerateCalloutAction, , "Host reported error."
+         
+      End Select
+   End If
+   
+   InitRegex = Not l_Cancel
+End Function
 
 Public Function Replace(ByVal p_TextToSearch As String, ByVal p_ReplaceWithText As String, Optional ByVal p_RegexToMatch As String) As String
+   Dim l_ErrorNumber As Long
+   Dim l_ErrorDesc As String
+   Dim l_ReplaceOptionsFlags As Long
+   
+   ' Returns a string with requested substitutions made (if found).
+   ' Make sure GlobalSearch = True to change all matches.
+   
+   Debug.Print "Subject text: " & p_TextToSearch
+   
+   If Not InitRegex(p_RegexToMatch) Then GoTo NoErrorCleanup
+
+   l_ReplaceOptionsFlags = Me.Options.Replace.OptionFlags
+   
+   If Me.Options.General.GlobalSearch Then l_ReplaceOptionsFlags = l_ReplaceOptionsFlags Or PCRE2_SUBSTITUTE_GLOBAL
+
+NoErrorCleanup:
+   On Error Resume Next
+   
+   l_ErrorNumber = 0
+   l_ErrorDesc = ""
+
+Cleanup:
+   On Error Resume Next
+
+   ' Free match data if necessary
+   If m_MatchData <> 0 Then pcre2_match_data_free m_MatchData: m_MatchData = 0
+
+   If l_ErrorNumber <> 0 Then
+      Cleanup
+      
+      On Error GoTo 0
+      Err.Raise l_ErrorNumber, , l_ErrorDesc
+   End If
+
+   Exit Function
+
+ErrorHandler:
+   Debug.Assert False
+   
+   l_ErrorNumber = Err.Number
+   l_ErrorDesc = Err.Description
+      
+   Resume Cleanup
 End Function
 
 Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMatch As String) As CPcreMatches
@@ -182,43 +251,15 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
    Dim la_Ovector() As Long
    Dim l_GlobalSearch As Boolean
    Dim l_Cancel As Boolean
-   Dim l_EnumerateCalloutAction As e_EnumerateCalloutAction
    Dim l_SubstitutionAction As e_SubstitutionAction
    Dim lo_SubstitutionCache As VBA.Collection
    Dim l_Substitute As Boolean
    Dim l_Delta As Long
    Dim ii As Long ' Loop counter
    
-   ' Use the value of the Pattern property if option p_RegexToMatch parameter is empty
-   ' Otherwise set the value of the Pattern property to the passed p_RegexToMatch value
-   If p_RegexToMatch = "" Then
-      p_RegexToMatch = Me.Pattern
-   Else
-      Me.Pattern = p_RegexToMatch
-   End If
-   
    Debug.Print "Subject text: " & p_TextToSearch
-   Debug.Print "Regex: " & p_RegexToMatch
    
-   InitRegex p_RegexToMatch
-   
-   If Me.Options.General.EnumerateCallouts Then
-      ' Enumerate all callouts before matching
-      
-      l_EnumerateCalloutAction = pcre2_callout_enumerate(m_CompiledRegex, AddressOf pcreCalloutEnumerateProc, ObjPtr(Me))
-      
-      Select Case l_EnumerateCalloutAction
-      Case enumcalloutaction_StopAll
-         ' Cancel matching.
-         Debug.Assert False
-         GoTo NoErrorCleanup
-         
-      Case Is < 0
-         ' Raise error
-         Err.Raise l_EnumerateCalloutAction, , "Host reported error."
-         
-      End Select
-   End If
+   If Not InitRegex(p_RegexToMatch) Then GoTo NoErrorCleanup
    
    l_GlobalSearch = Me.Options.General.GlobalSearch
    
