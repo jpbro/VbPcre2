@@ -275,7 +275,17 @@ ErrorHandler:
    Resume Cleanup
 End Function
 
+Public Function Test(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMatch As String) As Boolean
+   ' Return TRUE if any match found
+   Test = (Execute2(p_TextToSearch, p_RegexToMatch, True).Count > 0)
+End Function
+
 Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMatch As String) As CPcreMatches
+   ' Return TRUE if any match found
+   Set Execute = Execute2(p_TextToSearch, p_RegexToMatch, False)
+End Function
+
+Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMatch As String, Optional ByVal p_TestOnly As Boolean) As CPcreMatches
    ' Returns CPcreMatches object. If MatchCount = 0 then no matches.
 
    Dim l_ErrorNumber As Long
@@ -293,11 +303,13 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
    
    Debug.Print "Subject text: " & p_TextToSearch
    
+   Set Execute2 = New CPcreMatches
+   
    If Not InitRegex(p_RegexToMatch) Then GoTo NoErrorCleanup
    
-   l_GlobalSearch = Me.Options.General.GlobalSearch
-   
-   Set Execute = New CPcreMatches
+   If Not p_TestOnly Then
+      l_GlobalSearch = Me.Options.General.GlobalSearch
+   End If
    
    Do
       l_MatchCount = pcre2_match(m_CompiledRegexHandle, StrPtr(p_TextToSearch), Len(p_TextToSearch), 0, 0, m_MatchDataHandle, 0)
@@ -315,71 +327,73 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
             Err.Raise vbObjectError, , "Ovector pointer could not be retrieved!"
          End If
          
-         Dim l_SearchChunk As String
-         Dim l_MatchStart As Long
-         Dim l_MatchLen As Long
-         Dim l_MatchText As String
-         Dim l_OriginalMatchText As String
-         
-         CopyMemory l_MatchStart, ByVal l_OvectorPtr, 4
-         CopyMemory l_MatchLen, ByVal (l_OvectorPtr + 4), 4
-         l_MatchLen = l_MatchLen - l_MatchStart
-         
-         l_SearchChunk = Left$(p_TextToSearch, l_MatchStart + l_MatchLen)
-         l_MatchText = Mid$(l_SearchChunk, l_MatchStart + 1)
-         l_OriginalMatchText = l_MatchText
-         
-         If Me.Options.Match.MatchedEventEnabled Then
-            ' Check if we have a substitution stored in our cache
-            l_Substitute = False
+         If Not p_TestOnly Then
+            Dim l_SearchChunk As String
+            Dim l_MatchStart As Long
+            Dim l_MatchLen As Long
+            Dim l_MatchText As String
+            Dim l_OriginalMatchText As String
             
-            If lo_SubstitutionCache Is Nothing Then
-               Set lo_SubstitutionCache = New VBA.Collection
-               l_ErrorNumber = 5 ' Simulate not found in collection error
-            Else
-               On Error Resume Next
-               Err.Clear
-               l_MatchText = lo_SubstitutionCache.Item("KEY_" & l_OriginalMatchText)
-               l_ErrorNumber = Err.Number
-               On Error GoTo ErrorHandler
-            End If
+            CopyMemory l_MatchStart, ByVal l_OvectorPtr, 4
+            CopyMemory l_MatchLen, ByVal (l_OvectorPtr + 4), 4
+            l_MatchLen = l_MatchLen - l_MatchStart
             
-            If l_ErrorNumber = 0 Then
-               Debug.Print "Substitution cache hit for " & l_OriginalMatchText & ". Skipping Matched event and using cached value."
+            l_SearchChunk = Left$(p_TextToSearch, l_MatchStart + l_MatchLen)
+            l_MatchText = Mid$(l_SearchChunk, l_MatchStart + 1)
+            l_OriginalMatchText = l_MatchText
+            
+            If Me.Options.Match.MatchedEventEnabled Then
+               ' Check if we have a substitution stored in our cache
+               l_Substitute = False
                
-               l_Substitute = True
-            Else
-               ' Could not find substitution match in cache
-               ' Raise the Matched event since we found a match
+               If lo_SubstitutionCache Is Nothing Then
+                  Set lo_SubstitutionCache = New VBA.Collection
+                  l_ErrorNumber = 5 ' Simulate not found in collection error
+               Else
+                  On Error Resume Next
+                  Err.Clear
+                  l_MatchText = lo_SubstitutionCache.Item("KEY_" & l_OriginalMatchText)
+                  l_ErrorNumber = Err.Number
+                  On Error GoTo ErrorHandler
+               End If
                
-               l_ErrorNumber = 0
-               
-               l_SubstitutionAction = subaction_None
-               RaiseEvent Matched(l_MatchText, l_SubstitutionAction, l_Cancel)
-               
-               If l_Cancel Then GoTo NoErrorCleanup   ' Received instruction to cancel matching
-               
-               Select Case l_SubstitutionAction
-               Case subaction_ReplaceAndCache, subaction_Replace
-                  If l_SubstitutionAction = subaction_ReplaceAndCache Then
-                     lo_SubstitutionCache.Add l_MatchText, "KEY_" & l_OriginalMatchText
-                        
-                     ' Make sure cache doesn't get too big
-                     For ii = Me.Options.Match.MatchedEventSubstitutionCacheSize - 1 To lo_SubstitutionCache.Count - 1
-                        lo_SubstitutionCache.Remove 0
-                     Next ii
-                  
-                  End If
+               If l_ErrorNumber = 0 Then
+                  Debug.Print "Substitution cache hit for " & l_OriginalMatchText & ". Skipping Matched event and using cached value."
                   
                   l_Substitute = True
+               Else
+                  ' Could not find substitution match in cache
+                  ' Raise the Matched event since we found a match
                   
-               Case subaction_None
-                  ' Make sure match text is unchanged.
-                  l_MatchText = l_OriginalMatchText
-               
-               Case Else
-                  Err.Raise vbObjectError, , "Unknown substitution action: " & l_MatchText
-               End Select
+                  l_ErrorNumber = 0
+                  
+                  l_SubstitutionAction = subaction_None
+                  RaiseEvent Matched(l_MatchText, l_SubstitutionAction, l_Cancel)
+                  
+                  If l_Cancel Then GoTo NoErrorCleanup   ' Received instruction to cancel matching
+                  
+                  Select Case l_SubstitutionAction
+                  Case subaction_ReplaceAndCache, subaction_Replace
+                     If l_SubstitutionAction = subaction_ReplaceAndCache Then
+                        lo_SubstitutionCache.Add l_MatchText, "KEY_" & l_OriginalMatchText
+                           
+                        ' Make sure cache doesn't get too big
+                        For ii = Me.Options.Match.MatchedEventSubstitutionCacheSize - 1 To lo_SubstitutionCache.Count - 1
+                           lo_SubstitutionCache.Remove 0
+                        Next ii
+                     
+                     End If
+                     
+                     l_Substitute = True
+                     
+                  Case subaction_None
+                     ' Make sure match text is unchanged.
+                     l_MatchText = l_OriginalMatchText
+                  
+                  Case Else
+                     Err.Raise vbObjectError, , "Unknown substitution action: " & l_MatchText
+                  End Select
+               End If
             End If
          End If
          
@@ -405,7 +419,7 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
             End If
          
          Else
-            Execute.Add l_SearchChunk, la_Ovector, l_MatchCount
+            Execute2.Add l_SearchChunk, la_Ovector, l_MatchCount
          
             If l_GlobalSearch Then
                p_TextToSearch = Mid$(p_TextToSearch, l_MatchStart + l_MatchLen + 1)
@@ -424,7 +438,7 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
 NoErrorCleanup:
    On Error Resume Next
    
-   Execute.AppendText p_TextToSearch
+   Execute2.AppendText p_TextToSearch
    
    l_ErrorNumber = 0
    l_ErrorDesc = ""
