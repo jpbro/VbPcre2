@@ -156,20 +156,19 @@ Private Sub InitRegex(ByVal p_RegexToMatch As String, ByVal p_OptionFlags As Lon
       Cleanup
       
       m_Context = pcre2_compile_context_create(0)
-      If l_Context = 0 Then Err.Raise "Could not compile PCRE context! Last DLL Error: " & Err.LastDllError
+      If m_Context = 0 Then Err.Raise "Could not compile PCRE context! Last DLL Error: " & Err.LastDllError
       
-      m_CompiledRegex = pcre2_compile(StrPtr(p_RegexToMatch), Len(p_RegexToMatch), p_OptionFlags, l_ErrorCode, l_ErrorPosition, l_Context)
+      m_CompiledRegex = pcre2_compile(StrPtr(p_RegexToMatch), Len(p_RegexToMatch), p_OptionFlags, l_ErrorCode, l_ErrorPosition, m_Context)
       If m_CompiledRegex = 0 Then Err.Raise vbObjectError, , "Could not compile regex! Regex: " & p_RegexToMatch & vbNewLine & "Errorcode: " & l_ErrorCode & ", Error Position: " & l_ErrorPosition
       
       s_LastRegexOptions = p_OptionFlags
       s_LastRegex = p_RegexToMatch
-      m_CompiledRegex = l_CompiledRegex
    End If
 
    ' Create match data space
    If m_MatchData <> 0 Then pcre2_match_data_free m_MatchData: m_MatchData = 0
    
-   m_MatchData = pcre2_match_data_create_from_pattern(l_CompiledRegex, 0)
+   m_MatchData = pcre2_match_data_create_from_pattern(m_CompiledRegex, 0)
    
    If m_MatchData = 0 Then Err.Raise vbObjectError, , "Could not allocate match data! Last DLL Error: " & Err.LastDllError
 End Sub
@@ -216,7 +215,7 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
    If Me.Options.Match.EnumerateCallouts Then
       ' Enumerate all callouts before matching
       
-      l_EnumerateCalloutAction = pcre2_callout_enumerate(l_CompiledRegex, AddressOf pcreCalloutEnumerateProc, ObjPtr(Me))
+      l_EnumerateCalloutAction = pcre2_callout_enumerate(m_CompiledRegex, AddressOf pcreCalloutEnumerateProc, ObjPtr(Me))
       
       Select Case l_EnumerateCalloutAction
       Case enumcalloutaction_StopAll
@@ -244,7 +243,7 @@ Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexTo
       
       Case Is > 0
          ' Number of matches, store information about matches
-         l_OvectorPtr = pcre2_get_ovector_pointer(l_MatchData)
+         l_OvectorPtr = pcre2_get_ovector_pointer(m_MatchData)
          
          If l_OvectorPtr = 0 Then
             ' Shouldn't happen!
