@@ -138,9 +138,9 @@ Sub TestRegex2()
          
    For Each lo_Match In lo_Matches
       Debug.Print "Match #" & ii + 1 & ": " & lo_Match.Value
-      Debug.Print "Sub Match Count: " & lo_Match.SubMatches.Count
-      For jj = 0 To lo_Match.SubMatches.Count - 1
-         Debug.Print "SubMatch # " & jj + 1 & ": " & lo_Match.SubMatches(jj)
+      Debug.Print "Sub Match Count: " & lo_Match.submatches.Count
+      For jj = 0 To lo_Match.submatches.Count - 1
+         Debug.Print "SubMatch # " & jj + 1 & ": " & lo_Match.submatches(jj)
       Next jj
    Next lo_Match
    Debug.Print
@@ -178,8 +178,10 @@ Public Function testRunMatch(po_RegexObject As Object, ByVal p_Subject As String
    Dim lo_Matches As Object
    Dim lo_Match As Object
    Dim l_Match As String
-   Dim ii As Long
+   Dim l_SubMatch As Long
+   Dim l_SubMatchCount As Long
    Dim l_Log As String
+   Dim ii As Long
    
    l_Log = vbNewLine & "---------------------------------------------" & vbNewLine
    l_Log = l_Log & "Running testRunMatch test." & vbNewLine
@@ -214,6 +216,26 @@ Public Function testRunMatch(po_RegexObject As Object, ByVal p_Subject As String
       End If
       
       l_Log = l_Log & "Matched Text: " & l_Match & vbNewLine & vbNewLine
+            
+      If TypeOf lo_Match Is CPcreMatch Then
+         l_SubMatchCount = lo_Match.SubMatchCount
+      Else
+         l_SubMatchCount = lo_Match.submatches.Count
+      End If
+      
+      l_Log = l_Log & "Sub-match Count: " & l_SubMatchCount & vbNewLine
+      
+      For ii = 0 To l_SubMatchCount - 1
+         If TypeOf lo_Match Is CPcreMatch Then
+            l_SubMatch = lo_Match.SubMatchValue(ii)
+         Else
+            l_SubMatch = lo_Match.submatches(ii)
+         End If
+         
+         l_Log = l_Log & "Sub-match #" & l_SubMatchCount + 1 & ": " & l_SubMatch & vbNewLine
+      Next ii
+      
+      l_Log = l_Log & vbNewLine
    Next lo_Match
    
    l_Log = l_Log & "---------------------------------------------" & vbNewLine & vbNewLine

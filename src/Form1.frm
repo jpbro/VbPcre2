@@ -175,11 +175,39 @@ Private Sub cmdRunTests_Click()
    Dim l_Subject As String
    Dim l_Regex As String
    
-   l_Subject = "This is a test of the emergency broadcast system." & vbNewLine & "This is only a TEST!"
+   ' Matches should be found in these test. Results depend on Global and IgnoreCase parameter values
+   l_Subject = "This is a test of the emergency broadcast system." & vbNewLine & "This is only a TEST!" & vbNewLine & "If this were not a test, then really bad things have happened."
    l_Regex = "test"
+   
+   Me.rtbTestResults(0).SelStart = 0
+   Me.rtbTestResults(1).SelStart = 0
    
    Me.rtbTestResults(0).Text = testRunMatch(New CPcre, l_Subject, l_Regex, False, False)
    Me.rtbTestResults(1).Text = testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, False, False)
+   
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, True, False)
+   Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, True, False)
+   
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, True, True)
+   Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, True, True)
+   
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, False, True)
+   Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, False, True)
+   
+   ' No matches should be found in these following tests
+   l_Regex = "gobbledeegook"
+   
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, False, False)
+   Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, False, False)
+   
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, True, False)
+   Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, True, False)
+   
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, True, True)
+   Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, True, True)
+   
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, False, True)
+   Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, False, True)
    
    If Me.rtbTestResults(0).Text = Me.rtbTestResults(1).Text Then
       MsgBox "Test results match :)", vbOKOnly, "Result Match"
