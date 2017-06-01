@@ -301,6 +301,14 @@ Cleanup:
    If l_ErrorNumber <> 0 Then
       Cleanup
       
+      If IsPcre2ErrorCode(l_ErrorNumber) Then
+         l_ErrorDesc = l_ErrorDesc & vbNewLine & "PCRE2 Error Message: " & GetPcre2ErrorMessage(l_ErrorNumber)
+      Else
+         If IsPcre2ErrorCode(l_ErrorNumber - vbObjectError) Then
+            l_ErrorDesc = l_ErrorDesc & vbNewLine & "PCRE2 Error Message: " & GetPcre2ErrorMessage(l_ErrorNumber - vbObjectError)
+         End If
+      End If
+      
       On Error GoTo 0
       Err.Raise l_ErrorNumber, , l_ErrorDesc
    End If
