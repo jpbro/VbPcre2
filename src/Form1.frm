@@ -229,6 +229,7 @@ Private Sub cmdRunTests_Click()
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunReplace(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, l_Replace, False, True)
       
    Set mo_Pcre = New CPcre
+   TestRegexEnumerateCallout mo_Pcre
    TestRegexCallout mo_Pcre
       
    ' Report Results

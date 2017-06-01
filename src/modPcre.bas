@@ -179,7 +179,7 @@ Public Const PCRE2_PARTIAL_HARD As Long = &H20
 
 Public Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 
-Public Function pcreCalloutProc(ByVal p_CalloutBlockPointer As Long, ByRef p_UserData As Long) As Long
+Public Function pcreCalloutProc(ByVal p_CalloutBlockPointer As Long, ByVal p_UserData As Long) As Long
    Dim lt_CalloutBlock As modPcre.pcreCalloutBlock
    Dim lo_Pcre As CPcre
    Dim l_Ptr As Long
@@ -204,7 +204,7 @@ Public Function pcreCalloutProc(ByVal p_CalloutBlockPointer As Long, ByRef p_Use
    Debug.Print "Out pcreCalloutProc"
 End Function
 
-Public Function pcreCalloutEnumerateProc(ByVal p_CalloutEnumerateBlockPointer As Long, ByRef p_UserData As Long) As Long
+Public Function pcreCalloutEnumerateProc(ByVal p_CalloutEnumerateBlockPointer As Long, ByVal p_UserData As Long) As Long
    ' RETURN VALUES FROM CALLOUTS
    ' The external callout function returns an integer to PCRE2.
    ' If the value is zero, matching proceeds as normal.
