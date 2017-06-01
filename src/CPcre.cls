@@ -59,11 +59,10 @@ Public Event Matched(ByRef p_MatchedText As String, ByRef p_SubstitutionAction A
                                                                                  ' You can change p_MatchedText and set p_Replace = True to perform a substitution.
 
 Public Event CalloutEnumerated(ByVal p_CalloutNumber As Long, _
+                               ByVal p_CalloutLabel As String, _
+                               ByVal p_CalloutOffset As Long, _
                                ByVal p_PatternPosition As Long, _
                                ByVal p_NextItemLength As Long, _
-                               ByVal p_CalloutOffset As Long, _
-                               ByVal p_CalloutLength As Long, _
-                               ByVal p_CalloutString As String, _
                                ByRef p_Action As e_CalloutEnumeratedAction)
 
 Public Event CalloutReceived(ByVal p_CalloutNumber As Long, _
@@ -76,7 +75,7 @@ Public Event CalloutReceived(ByVal p_CalloutNumber As Long, _
                              ByRef pa_OffsetVector() As Long, _
                              ByVal p_PatternPosition As Long, _
                              ByVal p_NextItemLength As Long, _
-                             ByRef p_Action As Long)
+                             ByRef p_Action As e_CalloutReceivedAction)
                                    
                                
 Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryA" (ByVal p_LibraryFileName As String) As Long
@@ -247,6 +246,8 @@ Public Function Replace(ByVal p_TextToSearch As String, ByVal p_ReplaceWithText 
    ' Returns a string with requested substitutions made (if found).
    ' Make sure GlobalSearch = True to change all matches.
    
+   On Error GoTo ErrorHandler
+   
    Debug.Print "Subject text: " & p_TextToSearch
    
    If Not InitRegex(p_RegexToMatch) Then GoTo NoErrorCleanup
@@ -304,8 +305,8 @@ Cleanup:
       If IsPcre2ErrorCode(l_ErrorNumber) Then
          l_ErrorDesc = l_ErrorDesc & vbNewLine & "PCRE2 Error Message: " & GetPcre2ErrorMessage(l_ErrorNumber)
       Else
-         If IsPcre2ErrorCode(l_ErrorNumber - vbObjectError) Then
-            l_ErrorDesc = l_ErrorDesc & vbNewLine & "PCRE2 Error Message: " & GetPcre2ErrorMessage(l_ErrorNumber - vbObjectError)
+         If IsPcre2ErrorCode(vbObjectError - l_ErrorNumber) Then
+            l_ErrorDesc = l_ErrorDesc & vbNewLine & "PCRE2 Error Message: " & GetPcre2ErrorMessage(vbObjectError - l_ErrorNumber)
          End If
       End If
       
@@ -349,6 +350,8 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
    Dim l_Substitute As Boolean
    Dim l_Delta As Long
    Dim ii As Long ' Loop counter
+   
+   On Error GoTo ErrorHandler
    
    Debug.Print "Subject text: " & p_TextToSearch
    
@@ -505,8 +508,8 @@ Cleanup:
       If IsPcre2ErrorCode(l_ErrorNumber) Then
          l_ErrorDesc = l_ErrorDesc & vbNewLine & "PCRE2 Error Message: " & GetPcre2ErrorMessage(l_ErrorNumber)
       Else
-         If IsPcre2ErrorCode(l_ErrorNumber - vbObjectError) Then
-            l_ErrorDesc = l_ErrorDesc & vbNewLine & "PCRE2 Error Message: " & GetPcre2ErrorMessage(l_ErrorNumber - vbObjectError)
+         If IsPcre2ErrorCode(vbObjectError - l_ErrorNumber) Then
+            l_ErrorDesc = l_ErrorDesc & vbNewLine & "PCRE2 Error Message: " & GetPcre2ErrorMessage(vbObjectError - l_ErrorNumber)
          End If
       End If
       
@@ -574,25 +577,25 @@ Private Sub Cleanup()
 End Sub
 
 Friend Function RaiseCalloutEnumeratedEvent(pt_CalloutEnumerateBlock As pcreCalloutEnumerateBlock) As e_CalloutEnumeratedAction
-   Dim l_CalloutString As String
+   Dim l_CalloutLabel As String
    Dim l_Action As e_CalloutEnumeratedAction
    
    With pt_CalloutEnumerateBlock
       If .CalloutStringPointer <> 0 Then
-         l_CalloutString = stringGetFromPointerW(.CalloutStringPointer)
+         l_CalloutLabel = Left$(stringGetFromPointerW(.CalloutStringPointer), .CalloutStringLength)
       End If
       
-      RaiseEvent CalloutEnumerated(.CalloutNumber, .PatternPosition, .NextItemLength, .CalloutStringOffset, .CalloutStringLength, l_CalloutString, l_Action)
+      RaiseEvent CalloutEnumerated(.CalloutNumber, l_CalloutLabel, .CalloutStringOffset, .PatternPosition, .NextItemLength, l_Action)
    End With
    
    RaiseCalloutEnumeratedEvent = l_Action
 End Function
 
-Friend Function RaiseCalloutReceivedEvent(pt_CalloutBlock As pcreCalloutBlock) As Long
+Friend Function RaiseCalloutReceivedEvent(pt_CalloutBlock As pcreCalloutBlock) As e_CalloutReceivedAction
    Dim l_CalloutLabel As String
    Dim l_Mark As String
    Dim l_Subject As String
-   Dim l_Action As Long
+   Dim l_Action As e_CalloutReceivedAction
    Dim l_OvectorCount As Long
    Dim la_OffsetVector() As Long
    

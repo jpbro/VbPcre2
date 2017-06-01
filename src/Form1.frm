@@ -260,8 +260,14 @@ Private Sub Form_Resize()
    End With
 End Sub
 
-Private Sub mo_Pcre_CalloutEnumerated(ByVal p_CalloutNumber As Long, ByVal p_PatternPosition As Long, ByVal p_NextItemLength As Long, ByVal p_CalloutOffset As Long, ByVal p_CalloutLength As Long, ByVal p_CalloutString As String, p_Action As e_CalloutEnumeratedAction)
-   Debug.Print "Callout #" & p_CalloutNumber & " Received in " & Me.Name
+Private Sub mo_Pcre_CalloutEnumerated(ByVal p_CalloutNumber As Long, ByVal p_CalloutLabel As String, ByVal p_CalloutOffset As Long, ByVal p_PatternPosition As Long, ByVal p_NextItemLength As Long, p_Action As e_CalloutEnumeratedAction)
+   Debug.Print "Callout #" & p_CalloutNumber & "'" & p_CalloutLabel & "' Enumerated in " & Me.Name
+
+End Sub
+
+Private Sub mo_Pcre_CalloutReceived(ByVal p_CalloutNumber As Long, ByVal p_CalloutLabel As String, ByVal p_CalloutOffset As Long, ByVal p_Subject As String, ByVal p_Mark As String, ByVal p_CaptureTop As Long, ByVal p_CaptureLast As Long, pa_OffsetVector() As Long, ByVal p_PatternPosition As Long, ByVal p_NextItemLength As Long, p_Action As e_CalloutReceivedAction)
+   Debug.Print "Callout #" & p_CalloutNumber & " named '" & p_CalloutLabel & "' Received in " & Me.Name
+   p_Action = -10 'enumcalloutaction_Cancel
 End Sub
 
 Private Sub mo_Pcre_Matched(p_MatchedText As String, p_SubstitutionAction As e_SubstitutionAction, p_Cancel As Boolean)
