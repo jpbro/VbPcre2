@@ -29,6 +29,7 @@ Begin VB.Form Form1
       _ExtentX        =   8911
       _ExtentY        =   5736
       _Version        =   393217
+      Enabled         =   -1  'True
       ReadOnly        =   -1  'True
       ScrollBars      =   2
       DisableNoScroll =   -1  'True
@@ -62,6 +63,7 @@ Begin VB.Form Form1
       _ExtentX        =   8911
       _ExtentY        =   5736
       _Version        =   393217
+      Enabled         =   -1  'True
       ReadOnly        =   -1  'True
       ScrollBars      =   2
       DisableNoScroll =   -1  'True
@@ -226,6 +228,8 @@ Private Sub cmdRunTests_Click()
    Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunReplace(New CPcre, l_Subject, l_Regex, l_Replace, False, True)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunReplace(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, l_Replace, False, True)
       
+   Set mo_Pcre = New CPcre
+   TestRegexCallout mo_Pcre
       
    ' Report Results
    If Me.rtbTestResults(0).Text = Me.rtbTestResults(1).Text Then
@@ -255,7 +259,7 @@ Private Sub Form_Resize()
    End With
 End Sub
 
-Private Sub mo_Pcre_CalloutEnumerated(ByVal p_CalloutNumber As Long, ByVal p_PatternPosition As Long, ByVal p_NextItemLength As Long, ByVal p_CalloutOffset As Long, ByVal p_CalloutLength As Long, ByVal p_CalloutString As String, p_Action As e_EnumerateCalloutAction)
+Private Sub mo_Pcre_CalloutEnumerated(ByVal p_CalloutNumber As Long, ByVal p_PatternPosition As Long, ByVal p_NextItemLength As Long, ByVal p_CalloutOffset As Long, ByVal p_CalloutLength As Long, ByVal p_CalloutString As String, p_Action As e_CalloutEnumeratedAction)
    Debug.Print "Callout #" & p_CalloutNumber & " Received in " & Me.Name
 End Sub
 

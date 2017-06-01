@@ -35,12 +35,18 @@ Option Explicit
 ' OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ' SOFTWARE.
 
-Public Enum e_EnumerateCalloutAction
+Public Enum e_CalloutEnumeratedAction
    enumcalloutaction_Continue = 0
    enumcalloutaction_StopEnumeration = 1
    enumcalloutaction_StopAll = 2
 
    enumcalloutaction_RaiseError = vbObjectError
+End Enum
+
+Public Enum e_CalloutReceivedAction
+   enumcalloutaction_Continue = 0   ' Continue normally
+   enumcalloutaction_Skip = 1 ' Skip the current match, but continue matching.
+   enumcalloutaction_Cancel = -1 ' Any negative number will cancel matching and return the passed number
 End Enum
 
 Public Enum e_SubstitutionAction
@@ -58,8 +64,21 @@ Public Event CalloutEnumerated(ByVal p_CalloutNumber As Long, _
                                ByVal p_CalloutOffset As Long, _
                                ByVal p_CalloutLength As Long, _
                                ByVal p_CalloutString As String, _
-                               ByRef p_Action As e_EnumerateCalloutAction)
+                               ByRef p_Action As e_CalloutEnumeratedAction)
 
+Public Event CalloutReceived(ByVal p_CalloutNumber As Long, _
+                             ByVal p_CalloutLabel As String, _
+                             ByVal p_CalloutOffset As Long, _
+                             ByVal p_Subject As String, _
+                             ByVal p_Mark As String, _
+                             ByVal p_CaptureTop As Long, _
+                             ByVal p_CaptureLast As Long, _
+                             ByRef pa_OffsetVector() As Long, _
+                             ByVal p_PatternPosition As Long, _
+                             ByVal p_NextItemLength As Long, _
+                             ByRef p_Action As Long)
+                                   
+                               
 Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryA" (ByVal p_LibraryFileName As String) As Long
 Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal p_Hmodule As Long) As Long
 
@@ -71,9 +90,12 @@ Private Declare Function pcre2_match_data_create_from_pattern Lib "pcre2-16.dll"
 Private Declare Function pcre2_match Lib "pcre2-16.dll" Alias "_pcre2_match_16@28" (ByVal p_CompiledRegexHandle As Long, ByVal p_StringToSearchPointer As Long, ByVal p_StringToSearchLength As Long, ByVal p_StartSearchOffset As Long, ByVal p_MatchOptions As Long, ByVal p_MatchDataHandle As Long, ByVal p_MatchContextHandle As Long) As Long
 Private Declare Function pcre2_get_ovector_pointer Lib "pcre2-16.dll" Alias "_pcre2_get_ovector_pointer_16@4" (ByVal p_MatchDataHandle As Long) As Long
 Private Declare Sub pcre2_match_data_free Lib "pcre2-16.dll" Alias "_pcre2_match_data_free_16@4" (ByVal p_MatchDataHandle As Long)
-Private Declare Function pcre2_set_callout Lib "pcre2-16.dll" Alias "_pcre2_set_callout_16@12" (ByVal p_MatchDataHandle As Long, ByVal p_CalloutAddress As Long, ByRef p_CalloutDataPointer As Long) As Long
+Private Declare Function pcre2_set_callout Lib "pcre2-16.dll" Alias "_pcre2_set_callout_16@12" (ByVal p_MatchContextHandle As Long, ByVal p_CalloutAddress As Long, ByRef p_CalloutDataPointer As Long) As Long
 Private Declare Function pcre2_callout_enumerate Lib "pcre2-16.dll" Alias "_pcre2_callout_enumerate_16@12" (ByVal p_CompiledRegexHandle As Long, ByVal p_CalloutAddress As Long, ByRef p_CalloutDataPointer As Long) As Long
 Private Declare Function pcre2_substitute Lib "pcre2-16.dll" Alias "_pcre2_substitute_16@44" (ByVal p_CompiledRegexHandle As Long, ByVal p_StringToSearchPointer As Long, ByVal p_StringToSearchLength As Long, ByVal p_StartSearchOffset As Long, ByVal p_MatchOptions As Long, ByVal p_MatchDataHandle As Long, ByVal p_MatchContextHandle As Long, ByVal p_ReplacementTextPointer As Long, ByVal p_ReplacementTextLength As Long, ByVal p_OutputBufferPointer As Long, ByRef p_OutputBufferLength As Long) As Long
+Private Declare Function pcre2_match_context_create Lib "pcre2-16.dll" Alias "_pcre2_match_context_create_16@4" (ByVal p_GeneralContext As Long) As Long
+Private Declare Function pcre2_match_context_free Lib "pcre2-16.dll" Alias "_pcre2_match_context_free_16@4" (ByVal p_MatchContextHandle As Long) As Long
+Private Declare Function pcre2_get_ovector_count Lib "pcre2-16.dll" Alias "_pcre2_get_ovector_count_16*4" (ByVal p_MatchDataHandle As Long) As Long
 
 Private Const PCRE2_ERROR_NOMATCH As Long = -1
 
@@ -88,6 +110,7 @@ Private mo_Options As CPcreOptions
 Private m_CompiledRegexHandle As Long
 Private m_CompileContextHandle As Long
 Private m_MatchDataHandle As Long
+Private m_MatchContextHandle As Long
 
 Private m_Pattern As String   ' Last used regex pattern
 
@@ -122,8 +145,9 @@ Private Function InitRegex(ByVal p_RegexToMatch As String) As Boolean
    Dim l_ErrorPosition As Long
    Dim l_Recompile As Boolean
    Dim l_CompileOptionsFlags As Long
-   Dim l_EnumerateCalloutAction As e_EnumerateCalloutAction
+   Dim l_CalloutEnumeratedAction As e_CalloutEnumeratedAction
    Dim l_Cancel As Boolean
+   Dim l_ObjPtr As Long
    
    ' Use the value of the Pattern property if option p_RegexToMatch parameter is empty
    ' Otherwise set the value of the Pattern property to the passed p_RegexToMatch value
@@ -175,21 +199,36 @@ Private Function InitRegex(ByVal p_RegexToMatch As String) As Boolean
    
    If m_MatchDataHandle = 0 Then Err.Raise vbObjectError, , "Could not allocate match data! Last DLL Error: " & Err.LastDllError
 
+   l_ObjPtr = ObjPtr(Me)
+   
    If Me.Options.General.EnumerateCallouts Then
       ' Enumerate all callouts before matching
+      l_CalloutEnumeratedAction = pcre2_callout_enumerate(m_CompiledRegexHandle, AddressOf pcreCalloutEnumerateProc, l_ObjPtr)
       
-      l_EnumerateCalloutAction = pcre2_callout_enumerate(m_CompiledRegexHandle, AddressOf pcreCalloutEnumerateProc, ObjPtr(Me))
-      
-      Select Case l_EnumerateCalloutAction
+      Select Case l_CalloutEnumeratedAction
       Case enumcalloutaction_StopAll
          ' Cancel matching.
          l_Cancel = True
          
       Case Is < 0
          ' Raise error
-         Err.Raise l_EnumerateCalloutAction, , "Host reported error."
+         Err.Raise l_CalloutEnumeratedAction, , "Host reported error."
          
       End Select
+   End If
+   
+   If Me.Options.General.EnableCallouts Then
+      ' Callouts enabled during matching/substitution
+      
+      If m_MatchContextHandle <> 0 Then pcre2_match_context_free m_MatchContextHandle: m_MatchContextHandle = 0
+      
+      m_MatchContextHandle = pcre2_match_context_create(0)
+      
+      If m_MatchContextHandle = 0 Then Err.Raise vbObjectError, , "Could not allocate match context space! Last DLL Error: " & Err.LastDllError
+      
+      Debug.Print "Enabling callouts with ObjPtr: " & l_ObjPtr
+      
+      pcre2_set_callout m_MatchContextHandle, AddressOf pcreCalloutProc, l_ObjPtr
    End If
    
    InitRegex = Not l_Cancel
@@ -254,7 +293,8 @@ NoErrorCleanup:
 Cleanup:
    On Error Resume Next
 
-   ' Free match data if necessary
+   ' Free match data and context if necessary
+   If m_MatchContextHandle <> 0 Then pcre2_match_context_free m_MatchContextHandle: m_MatchContextHandle = 0
    If m_MatchDataHandle <> 0 Then pcre2_match_data_free m_MatchDataHandle: m_MatchDataHandle = 0
 
    If l_ErrorNumber <> 0 Then
@@ -312,7 +352,7 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
    End If
    
    Do
-      l_MatchCount = pcre2_match(m_CompiledRegexHandle, StrPtr(p_TextToSearch), Len(p_TextToSearch), 0, 0, m_MatchDataHandle, 0)
+      l_MatchCount = pcre2_match(m_CompiledRegexHandle, StrPtr(p_TextToSearch), Len(p_TextToSearch), 0, 0, m_MatchDataHandle, m_MatchContextHandle)
    
       Select Case l_MatchCount
       Case PCRE2_ERROR_NOMATCH
@@ -447,6 +487,7 @@ Cleanup:
    On Error Resume Next
 
    ' Free match data if necessary
+   If m_MatchContextHandle <> 0 Then pcre2_match_context_free m_MatchContextHandle: m_MatchContextHandle = 0
    If m_MatchDataHandle <> 0 Then pcre2_match_data_free m_MatchDataHandle: m_MatchDataHandle = 0
 
    If l_ErrorNumber <> 0 Then
@@ -475,9 +516,9 @@ Private Sub Cleanup()
    If m_CompileContextHandle <> 0 Then pcre2_compile_context_free m_CompileContextHandle: m_CompileContextHandle = 0
 End Sub
 
-Friend Function RaiseCalloutEnumeratedEvent(pt_CalloutEnumerateBlock As pcreCalloutEnumerateBlock) As Long
+Friend Function RaiseCalloutEnumeratedEvent(pt_CalloutEnumerateBlock As pcreCalloutEnumerateBlock) As e_CalloutEnumeratedAction
    Dim l_CalloutString As String
-   Dim l_Action As e_EnumerateCalloutAction
+   Dim l_Action As e_CalloutEnumeratedAction
    
    With pt_CalloutEnumerateBlock
       If .CalloutStringPointer <> 0 Then
@@ -488,6 +529,47 @@ Friend Function RaiseCalloutEnumeratedEvent(pt_CalloutEnumerateBlock As pcreCall
    End With
    
    RaiseCalloutEnumeratedEvent = l_Action
+End Function
+
+Friend Function RaiseCalloutReceivedEvent(pt_CalloutBlock As pcreCalloutBlock) As Long
+   Dim l_CalloutLabel As String
+   Dim l_Mark As String
+   Dim l_Subject As String
+   Dim l_Action As Long
+   Dim l_OvectorCount As Long
+   Dim la_OffsetVector() As Long
+   
+   With pt_CalloutBlock
+      If .CalloutStringPointer <> 0 Then
+         If .CalloutStringLength > 0 Then
+            l_CalloutLabel = Left$(stringGetFromPointerW(.CalloutStringPointer), .CalloutStringLength)
+         End If
+      End If
+      
+      If .SubjectPointer <> 0 Then
+         If .SubjectLength > 0 Then
+            l_Subject = Left$(stringGetFromPointerW(.SubjectPointer), .SubjectLength)
+         End If
+      End If
+      
+      If .MarkPointer <> 0 Then
+         l_Mark = stringGetFromPointerW(.MarkPointer)
+      End If
+      
+      If m_MatchDataHandle <> 0 Then
+         l_OvectorCount = pcre2_get_ovector_count(m_MatchDataHandle)
+         
+         ReDim la_Ovector(2 * l_OvectorCount - 1)
+   
+         CopyMemory la_Ovector(0), ByVal .OffsetVectorPointer, 2 * l_OvectorCount * 4
+      Else
+         ReDim la_Ovector(0 To -1)
+      End If
+      
+      RaiseEvent CalloutReceived(.CalloutNumber, l_CalloutLabel, .CalloutStringOffset, l_Subject, l_Mark, .CaptureTop, .CaptureLast, la_OffsetVector, .PatternPosition, .NextItemLength, l_Action)
+   End With
+   
+   RaiseCalloutReceivedEvent = l_Action
 End Function
 
 ' GlobalSearch and IgnoreCase properties are aliases for GlobalSearch and CaseSensitive options

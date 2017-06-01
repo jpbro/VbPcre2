@@ -68,6 +68,29 @@ Sub TestRegexCallout(po_Pcre As CPcre)
    End With
    
    With po_Pcre.Options.General
+      .EnableCallouts = True
+   End With
+   
+   Set lo_Matches = po_Pcre.Execute("This is a test of matching stuff!", "(?C""test"")test\s*.+\s*(Mat)")
+   If lo_Matches.Count > 0 Then
+      For ii = 0 To lo_Matches.Count - 1
+         Debug.Print "Match #" & ii + 1 & ": " & lo_Matches(ii).MatchedText
+      Next ii
+      
+   Else
+      Debug.Print "No matches found!"
+   End If
+End Sub
+
+Sub TestRegexEnumerateCallout(po_Pcre As CPcre)
+   Dim lo_Matches As CPcreMatches
+   Dim ii As Long
+   
+   With po_Pcre.Options.Compile
+      .CaseSensitive = False
+   End With
+   
+   With po_Pcre.Options.General
       .EnumerateCallouts = True
    End With
    

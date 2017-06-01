@@ -135,3 +135,4 @@ Public Property Let MatchedEventSubstitutionCacheSize(ByVal p_MaxCount As Long)
    m_SubstitutionCacheSize = p_MaxCount
 End Property
 
+

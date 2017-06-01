@@ -40,6 +40,7 @@ Option Explicit
 
 Private m_Global As Boolean
 Private m_EnumerateCallouts As Boolean
+Private m_EnableCallouts As Boolean
 
 ' Set GlobalSearch to True to find all possible matches
 ' Set GlobalSearch to False to stop search after first match.
@@ -61,4 +62,14 @@ End Property
 Public Property Let EnumerateCallouts(ByVal p_Enabled As Boolean)
    m_EnumerateCallouts = p_Enabled
 End Property
+
+
+Public Property Get EnableCallouts() As Boolean
+   EnableCallouts = m_EnableCallouts
+End Property
+   
+Public Property Let EnableCallouts(ByVal p_Enabled As Boolean)
+   m_EnableCallouts = p_Enabled
+End Property
+
 

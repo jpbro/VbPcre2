@@ -176,6 +176,31 @@ Public Const PCRE2_PARTIAL_HARD As Long = &H20
 
 Public Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 
+Public Function pcreCalloutProc(ByVal p_CalloutBlockPointer As Long, ByRef p_UserData As Long) As Long
+   Dim lt_CalloutBlock As modPcre.pcreCalloutBlock
+   Dim lo_Pcre As CPcre
+   Dim l_Ptr As Long
+   
+   Debug.Print "In pcreCalloutProc"
+   Debug.Print "Recevied callout from ObjPtr: " & p_UserData
+
+   ' Get a weak reference to the appropriate PCRE object
+   If p_UserData = 0 Then
+      ' Should be ObjPtr of your CPcre object!
+      Debug.Assert False
+      
+   Else
+      Set lo_Pcre = GetWeakReference(p_UserData)
+      
+      CopyMemory ByVal VarPtr(lt_CalloutBlock), ByVal p_CalloutBlockPointer, LenB(lt_CalloutBlock)
+   
+      ' Ask the PCRE object to raise an event so the hosting code can respond to the callout
+      pcreCalloutProc = lo_Pcre.RaiseCalloutReceivedEvent(lt_CalloutBlock)
+   End If
+   
+   Debug.Print "Out pcreCalloutProc"
+End Function
+
 Public Function pcreCalloutEnumerateProc(ByVal p_CalloutEnumerateBlockPointer As Long, ByRef p_UserData As Long) As Long
    ' RETURN VALUES FROM CALLOUTS
    ' The external callout function returns an integer to PCRE2.
@@ -191,14 +216,20 @@ Public Function pcreCalloutEnumerateProc(ByVal p_CalloutEnumerateBlockPointer As
    
    Debug.Print "In pcreCalloutEnumerateProc"
    
-   ' Get a weak reference to the appropriate PCRE object
-   Set lo_Pcre = GetWeakReference(p_UserData)
+   If p_UserData = 0 Then
+      ' Should be ObjPtr of your CPcre object!
+      Debug.Assert False
+      
+   Else
+      ' Get a weak reference to the appropriate PCRE object
+      Set lo_Pcre = GetWeakReference(p_UserData)
+      
+      CopyMemory ByVal VarPtr(lt_CalloutEnumerateBlock), ByVal p_CalloutEnumerateBlockPointer, LenB(lt_CalloutEnumerateBlock)
    
-   CopyMemory ByVal VarPtr(lt_CalloutEnumerateBlock), ByVal p_CalloutEnumerateBlockPointer, LenB(lt_CalloutEnumerateBlock)
-
-   ' Ask the PCRE object to raise an event so the hosting code can respond to the callout
-   pcreCalloutEnumerateProc = lo_Pcre.RaiseCalloutEnumeratedEvent(lt_CalloutEnumerateBlock)
-
+      ' Ask the PCRE object to raise an event so the hosting code can respond to the callout
+      pcreCalloutEnumerateProc = lo_Pcre.RaiseCalloutEnumeratedEvent(lt_CalloutEnumerateBlock)
+   End If
+   
    Debug.Print "Out pcreCalloutEnumerateProc. Result: " & pcreCalloutEnumerateProc
 End Function
 
