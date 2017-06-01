@@ -128,6 +128,9 @@ Public Enum PCRE_ReturnCode
    PCRE_RC_ERROR_BADSUBSPATTERN = -60
    PCRE_RC_ERROR_TOOMANYREPLACE = -61
    PCRE_RC_ERROR_BADSERIALIZEDDATA = -62
+
+   [_PCRE_RC_ERROR_FIRST] = -1
+   [_PCRE_RC_ERROR_LAST] = -62   ' If you add more PCRE2 error codes, make sure to update this value!
 End Enum
 
 'The following option bits can be passed only to pcre2_compile(). However,

@@ -90,12 +90,13 @@ Private Declare Function pcre2_match_data_create_from_pattern Lib "pcre2-16.dll"
 Private Declare Function pcre2_match Lib "pcre2-16.dll" Alias "_pcre2_match_16@28" (ByVal p_CompiledRegexHandle As Long, ByVal p_StringToSearchPointer As Long, ByVal p_StringToSearchLength As Long, ByVal p_StartSearchOffset As Long, ByVal p_MatchOptions As Long, ByVal p_MatchDataHandle As Long, ByVal p_MatchContextHandle As Long) As Long
 Private Declare Function pcre2_get_ovector_pointer Lib "pcre2-16.dll" Alias "_pcre2_get_ovector_pointer_16@4" (ByVal p_MatchDataHandle As Long) As Long
 Private Declare Sub pcre2_match_data_free Lib "pcre2-16.dll" Alias "_pcre2_match_data_free_16@4" (ByVal p_MatchDataHandle As Long)
-Private Declare Function pcre2_set_callout Lib "pcre2-16.dll" Alias "_pcre2_set_callout_16@12" (ByVal p_MatchContextHandle As Long, ByVal p_CalloutAddress As Long, ByRef p_CalloutDataPointer As Long) As Long
 Private Declare Function pcre2_callout_enumerate Lib "pcre2-16.dll" Alias "_pcre2_callout_enumerate_16@12" (ByVal p_CompiledRegexHandle As Long, ByVal p_CalloutAddress As Long, ByRef p_CalloutDataPointer As Long) As Long
+Private Declare Function pcre2_set_callout Lib "pcre2-16.dll" Alias "_pcre2_set_callout_16@12" (ByVal p_MatchContextHandle As Long, ByVal p_CalloutAddress As Long, ByRef p_CalloutDataPointer As Long) As Long
 Private Declare Function pcre2_substitute Lib "pcre2-16.dll" Alias "_pcre2_substitute_16@44" (ByVal p_CompiledRegexHandle As Long, ByVal p_StringToSearchPointer As Long, ByVal p_StringToSearchLength As Long, ByVal p_StartSearchOffset As Long, ByVal p_MatchOptions As Long, ByVal p_MatchDataHandle As Long, ByVal p_MatchContextHandle As Long, ByVal p_ReplacementTextPointer As Long, ByVal p_ReplacementTextLength As Long, ByVal p_OutputBufferPointer As Long, ByRef p_OutputBufferLength As Long) As Long
 Private Declare Function pcre2_match_context_create Lib "pcre2-16.dll" Alias "_pcre2_match_context_create_16@4" (ByVal p_GeneralContext As Long) As Long
 Private Declare Function pcre2_match_context_free Lib "pcre2-16.dll" Alias "_pcre2_match_context_free_16@4" (ByVal p_MatchContextHandle As Long) As Long
-Private Declare Function pcre2_get_ovector_count Lib "pcre2-16.dll" Alias "_pcre2_get_ovector_count_16*4" (ByVal p_MatchDataHandle As Long) As Long
+Private Declare Function pcre2_get_ovector_count Lib "pcre2-16.dll" Alias "_pcre2_get_ovector_count_16@4" (ByVal p_MatchDataHandle As Long) As Long
+Private Declare Function pcre2_get_error_message Lib "pcre2-16.dll" Alias "_pcre2_get_error_message_16@12" (ByVal p_ErrorCode As Long, ByVal p_ErrorMessageBufferPointer As Long, ByVal p_ErrorMessageBufferLength As Long) As Long
 
 Private Const PCRE2_ERROR_NOMATCH As Long = -1
 
@@ -493,6 +494,14 @@ Cleanup:
    If l_ErrorNumber <> 0 Then
       Cleanup
       
+      If IsPcre2ErrorCode(l_ErrorNumber) Then
+         l_ErrorDesc = l_ErrorDesc & vbNewLine & "PCRE2 Error Message: " & GetPcre2ErrorMessage(l_ErrorNumber)
+      Else
+         If IsPcre2ErrorCode(l_ErrorNumber - vbObjectError) Then
+            l_ErrorDesc = l_ErrorDesc & vbNewLine & "PCRE2 Error Message: " & GetPcre2ErrorMessage(l_ErrorNumber - vbObjectError)
+         End If
+      End If
+      
       On Error GoTo 0
       Err.Raise l_ErrorNumber, , l_ErrorDesc
    End If
@@ -506,6 +515,46 @@ ErrorHandler:
    l_ErrorDesc = Err.Description
       
    Resume Cleanup
+End Function
+
+Private Function IsPcre2ErrorCode(ByVal p_ErrorCode As Long) As Boolean
+   IsPcre2ErrorCode = (p_ErrorCode <= [_PCRE_RC_ERROR_FIRST] And p_ErrorCode >= [_PCRE_RC_ERROR_LAST])
+End Function
+
+Private Function GetPcre2ErrorMessage(ByVal p_ErrorCode As Long) As String
+   Dim l_BufferLength As Long
+   Dim l_Buffer As String
+   Dim l_MessageLength As Long
+   
+   l_BufferLength = 256
+   
+   Do
+      l_Buffer = Space$(l_BufferLength)
+      
+      l_MessageLength = pcre2_get_error_message(p_ErrorCode, StrPtr(l_Buffer), l_BufferLength)
+      
+      If l_MessageLength < 0 Then
+         Select Case l_MessageLength
+         Case PCRE_RC_ERROR_NOMEMORY
+            ' Buffer too small
+            l_BufferLength = l_BufferLength * 2
+         Case PCRE_RC_ERROR_BADDATA
+            ' Bad error code
+            
+            Exit Do
+         Case Else
+            Debug.Assert False
+            Exit Do
+            
+         End Select
+      End If
+   Loop While l_MessageLength < 0
+   
+   If l_MessageLength < 0 Then
+      GetPcre2ErrorMessage = "Unknown error #" & p_ErrorCode & ", PCRE2 error message result #" & l_MessageLength
+   Else
+      GetPcre2ErrorMessage = Left$(l_Buffer, l_MessageLength)
+   End If
 End Function
 
 Private Sub Cleanup()
