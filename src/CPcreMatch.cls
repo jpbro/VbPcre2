@@ -38,6 +38,7 @@ Option Explicit
 Private m_SearchedText As String
 Private ma_Ovector() As Long
 Private m_Count As Long
+Private m_MatchOffset As Long
 
 Friend Property Get SearchedText() As String
    ' The full text searched up to the end of the matched text
@@ -47,6 +48,21 @@ End Property
 Public Property Get MatchedText() As String
    ' The matched chunk of text in the searched text
    MatchedText = Me.SubMatchValue(-1)
+End Property
+
+Public Property Get FirstIndex() As Long
+   ' Return the character index of the start of the full match
+   FirstIndex = ma_Ovector(0) + m_MatchOffset
+End Property
+
+Public Property Get LastIndex() As Long
+   ' Return the character index of the end of the full match
+   LastIndex = ma_Ovector(1) + m_MatchOffset
+End Property
+
+Public Property Get Length() As Long
+   ' Return the length of the full match
+   Length = ma_Ovector(1) - ma_Ovector(0)
 End Property
 
 Public Property Get SubMatchCount() As Long
@@ -61,7 +77,7 @@ Public Property Get SubMatchValue(ByVal p_ZeroBasedSubMatchIndex As Long) As Str
    SubMatchValue = Mid$(m_SearchedText, ma_Ovector(p_ZeroBasedSubMatchIndex) + 1, ma_Ovector(p_ZeroBasedSubMatchIndex + 1) - ma_Ovector(p_ZeroBasedSubMatchIndex))
 End Property
 
-Friend Sub Init(ByVal p_SearchedText As String, pa_OvectorArray() As Long, ByVal p_MatchCount As Long)
+Friend Sub Init(ByVal p_SearchedText As String, pa_OvectorArray() As Long, ByVal p_MatchCount As Long, ByVal p_MatchOffset As Long)
    If p_MatchCount > 0 Then
       ma_Ovector = pa_OvectorArray
    End If
@@ -69,4 +85,6 @@ Friend Sub Init(ByVal p_SearchedText As String, pa_OvectorArray() As Long, ByVal
    m_SearchedText = p_SearchedText
    
    m_Count = p_MatchCount
+   
+   m_MatchOffset = p_MatchOffset
 End Sub

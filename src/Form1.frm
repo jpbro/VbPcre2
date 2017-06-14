@@ -2,13 +2,13 @@ VERSION 5.00
 Object = "{3B7C8863-D78F-101B-B9B5-04021C009402}#1.2#0"; "richtx32.ocx"
 Begin VB.Form Form1 
    Caption         =   "VbPcre2 Test"
-   ClientHeight    =   6408
+   ClientHeight    =   6420
    ClientLeft      =   120
-   ClientTop       =   456
-   ClientWidth     =   11592
+   ClientTop       =   450
+   ClientWidth     =   11595
    BeginProperty Font 
       Name            =   "Tahoma"
-      Size            =   7.8
+      Size            =   7.5
       Charset         =   0
       Weight          =   400
       Underline       =   0   'False
@@ -16,8 +16,8 @@ Begin VB.Form Form1
       Strikethrough   =   0   'False
    EndProperty
    LinkTopic       =   "Form1"
-   ScaleHeight     =   6408
-   ScaleWidth      =   11592
+   ScaleHeight     =   6420
+   ScaleWidth      =   11595
    StartUpPosition =   2  'CenterScreen
    Begin RichTextLib.RichTextBox rtbTestResults 
       Height          =   3252
@@ -26,8 +26,8 @@ Begin VB.Form Form1
       TabIndex        =   1
       Top             =   1440
       Width           =   5052
-      _ExtentX        =   8911
-      _ExtentY        =   5736
+      _ExtentX        =   8916
+      _ExtentY        =   5741
       _Version        =   393217
       Enabled         =   -1  'True
       ReadOnly        =   -1  'True
@@ -40,7 +40,7 @@ Begin VB.Form Form1
       Caption         =   "Run Tests"
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   13.8
+         Size            =   13.5
          Charset         =   0
          Weight          =   700
          Underline       =   0   'False
@@ -60,8 +60,8 @@ Begin VB.Form Form1
       TabIndex        =   2
       Top             =   1476
       Width           =   5052
-      _ExtentX        =   8911
-      _ExtentY        =   5736
+      _ExtentX        =   8916
+      _ExtentY        =   5741
       _Version        =   393217
       Enabled         =   -1  'True
       ReadOnly        =   -1  'True
@@ -74,7 +74,7 @@ Begin VB.Form Form1
       Caption         =   "VB Script"
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   10.2
+         Size            =   10.5
          Charset         =   0
          Weight          =   700
          Underline       =   0   'False
@@ -92,7 +92,7 @@ Begin VB.Form Form1
       Caption         =   "VbPcre2"
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   10.2
+         Size            =   10.5
          Charset         =   0
          Weight          =   700
          Underline       =   0   'False
@@ -190,44 +190,44 @@ Private Sub cmdRunTests_Click()
    
    Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, True, False)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, True, False)
-   
+
    Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, True, True)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, True, True)
-   
+
    Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, False, True)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, False, True)
-   
+
    ' No matches should be found in these following tests
    l_Regex = "gobbledeegook"
-   
+
    Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, False, False)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, False, False)
-   
+
    Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, True, False)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, True, False)
-   
+
    Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, True, True)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, True, True)
-   
+
    Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, False, True)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, False, True)
-   
+
    ' Substitution Tests
    l_Regex = "test"
    l_Replace = "<REDACTED>"
-   
+
    Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunReplace(New CPcre, l_Subject, l_Regex, l_Replace, False, False)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunReplace(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, l_Replace, False, False)
-   
+
    Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunReplace(New CPcre, l_Subject, l_Regex, l_Replace, True, False)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunReplace(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, l_Replace, True, False)
-   
+
    Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunReplace(New CPcre, l_Subject, l_Regex, l_Replace, True, True)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunReplace(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, l_Replace, True, True)
-   
+
    Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunReplace(New CPcre, l_Subject, l_Regex, l_Replace, False, True)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunReplace(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, l_Replace, False, True)
-      
+
    Set mo_Pcre = New CPcre
    TestRegexEnumerateCallout mo_Pcre
    TestRegexCallout mo_Pcre
@@ -267,7 +267,6 @@ End Sub
 
 Private Sub mo_Pcre_CalloutReceived(ByVal p_CalloutNumber As Long, ByVal p_CalloutLabel As String, ByVal p_CalloutOffset As Long, ByVal p_Subject As String, ByVal p_Mark As String, ByVal p_CaptureTop As Long, ByVal p_CaptureLast As Long, pa_OffsetVector() As Long, ByVal p_PatternPosition As Long, ByVal p_NextItemLength As Long, p_Action As e_CalloutReceivedAction)
    Debug.Print "Callout #" & p_CalloutNumber & " named '" & p_CalloutLabel & "' Received in " & Me.Name
-   p_Action = -10 'enumcalloutaction_Cancel
 End Sub
 
 Private Sub mo_Pcre_Matched(p_MatchedText As String, p_SubstitutionAction As e_SubstitutionAction, p_Cancel As Boolean)

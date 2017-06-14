@@ -240,6 +240,8 @@ Public Function testRunMatch(po_RegexObject As Object, ByVal p_Subject As String
       
       l_Log = l_Log & "Matched Text: " & l_Match & vbNewLine & vbNewLine
             
+      l_Log = l_Log & "Match Start Index: " & lo_Match.FirstIndex & vbNewLine & vbNewLine
+      
       If TypeOf lo_Match Is CPcreMatch Then
          l_SubMatchCount = lo_Match.SubMatchCount
       Else

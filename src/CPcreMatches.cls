@@ -69,12 +69,12 @@ Friend Sub AppendText(ByVal p_Text As String)
    m_AppendedText = m_AppendedText & p_Text
 End Sub
 
-Friend Sub Add(ByVal p_TextToSearch As String, pa_OvectorArray() As Long, ByVal p_MatchCount As Long)
+Friend Sub Add(ByVal p_TextToSearch As String, pa_OvectorArray() As Long, ByVal p_MatchCount As Long, ByVal p_MatchOffset As Long)
    Dim lo_Match As CPcreMatch
    
    Set lo_Match = New CPcreMatch
    
-   lo_Match.Init p_TextToSearch, pa_OvectorArray, p_MatchCount
+   lo_Match.Init p_TextToSearch, pa_OvectorArray, p_MatchCount, p_MatchOffset
    
    mo_Matches.Add lo_Match
 End Sub

@@ -350,6 +350,7 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
    Dim l_Substitute As Boolean
    Dim l_Delta As Long
    Dim ii As Long ' Loop counter
+   Dim l_MatchOffset As Long
    
    On Error GoTo ErrorHandler
    
@@ -471,7 +472,9 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
             End If
          
          Else
-            Execute2.Add l_SearchChunk, la_Ovector, l_MatchCount
+            Execute2.Add l_SearchChunk, la_Ovector, l_MatchCount, l_MatchOffset
+            
+            l_MatchOffset = l_MatchOffset + l_MatchStart + l_MatchLen
          
             If l_GlobalSearch Then
                p_TextToSearch = Mid$(p_TextToSearch, l_MatchStart + l_MatchLen + 1)
