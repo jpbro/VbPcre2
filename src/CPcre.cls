@@ -331,7 +331,7 @@ Public Function Test(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMat
 End Function
 
 Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMatch As String) As CPcreMatches
-   ' Return TRUE if any match found
+   ' Returns CPcreMatches object. If MatchCount = 0 then no matches.
    Set Execute = Execute2(p_TextToSearch, p_RegexToMatch, False)
 End Function
 
