@@ -76,7 +76,7 @@ End Property
 
 
 Public Property Get SubjectIsBeginningOfLine() As Boolean
-   SubjectIsBeginningOfLine = m_Options And Not PCRE2_NOTBOL
+   SubjectIsBeginningOfLine = Not CBool(m_Options And PCRE2_NOTBOL)
 End Property
 
 Public Property Let SubjectIsBeginningOfLine(ByVal p_Enabled As Boolean)
@@ -84,7 +84,7 @@ Public Property Let SubjectIsBeginningOfLine(ByVal p_Enabled As Boolean)
 End Property
 
 Public Property Get SubjectIsEndOfLine() As Boolean
-   SubjectIsEndOfLine = m_Options And Not PCRE2_NOTEOL
+   SubjectIsEndOfLine = Not CBool(m_Options And PCRE2_NOTEOL)
 End Property
 
 Public Property Let SubjectIsEndOfLine(ByVal p_Enabled As Boolean)
@@ -92,7 +92,7 @@ Public Property Let SubjectIsEndOfLine(ByVal p_Enabled As Boolean)
 End Property
 
 Public Property Get MatchIfEmpty() As Boolean
-   MatchIfEmpty = m_Options And Not PCRE2_NOTEMPTY
+   MatchIfEmpty = Not CBool(m_Options And PCRE2_NOTEMPTY)
 End Property
 
 Public Property Let MatchIfEmpty(ByVal p_Enabled As Boolean)
@@ -100,7 +100,7 @@ Public Property Let MatchIfEmpty(ByVal p_Enabled As Boolean)
 End Property
 
 Public Property Get MatchIfEmptyAtStart() As Boolean
-   MatchIfEmptyAtStart = m_Options And Not PCRE2_NOTEMPTY_ATSTART
+   MatchIfEmptyAtStart = Not CBool(m_Options And PCRE2_NOTEMPTY_ATSTART)
 End Property
 
 Public Property Let MatchIfEmptyAtStart(ByVal p_Enabled As Boolean)
@@ -108,7 +108,7 @@ Public Property Let MatchIfEmptyAtStart(ByVal p_Enabled As Boolean)
 End Property
 
 Public Property Get PerformUtfCheck() As Boolean
-   PerformUtfCheck = m_Options And Not PCRE2_NO_UTF_CHECK
+   PerformUtfCheck = Not CBool(m_Options And PCRE2_NO_UTF_CHECK)
 End Property
 
 Public Property Let PerformUtfCheck(ByVal p_Enabled As Boolean)

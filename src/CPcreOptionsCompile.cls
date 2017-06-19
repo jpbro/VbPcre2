@@ -101,7 +101,7 @@ End Property
 
 ' If CASE SENSITIVE option is FALSE, letters in the pattern match both upper and lower case letters in the subject.
 Public Property Get CaseSensitive() As Boolean
-   CaseSensitive = m_Options And Not PCRE2_CASELESS
+   CaseSensitive = Not CBool(m_Options And PCRE2_CASELESS)
 End Property
 
 Public Property Let CaseSensitive(ByVal p_Enabled As Boolean)
@@ -187,7 +187,7 @@ End Property
 ' This option inverts the "greediness" of the quantifiers so that they are not greedy by default,
 ' but become greedy if followed by "?".
 Public Property Get Greedy() As Boolean
-   Greedy = m_Options And Not PCRE2_UNGREEDY
+   Greedy = Not CBool(m_Options And PCRE2_UNGREEDY)
 End Property
 
 Public Property Let Greedy(ByVal p_Enabled As Boolean)
@@ -202,7 +202,7 @@ End Property
 ' When it is set, the effect of passing an invalid UTF string as a pattern is undefined.
 ' It may cause your program to crash or loop. Note that this option can also be passed to pcre2_match() and pcre_dfa_match(), to suppress validity checking of the subject string.
 Public Property Get CheckUtfValidity() As Boolean
-   CheckUtfValidity = m_Options And Not PCRE2_NO_UTF_CHECK
+   CheckUtfValidity = Not CBool(m_Options And PCRE2_NO_UTF_CHECK)
 End Property
 
 Public Property Let CheckUtfValidity(ByVal p_Enabled As Boolean)
