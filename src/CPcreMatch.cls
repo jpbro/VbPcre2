@@ -72,9 +72,15 @@ Public Property Get SubMatchCount() As Long
 End Property
 
 Public Property Get SubMatchValue(ByVal p_ZeroBasedSubMatchIndex As Long) As String
+   Dim l_Len As Long
+   
    p_ZeroBasedSubMatchIndex = 2 * (p_ZeroBasedSubMatchIndex + 1)
    
-   SubMatchValue = Mid$(m_SearchedText, ma_Ovector(p_ZeroBasedSubMatchIndex) + 1, ma_Ovector(p_ZeroBasedSubMatchIndex + 1) - ma_Ovector(p_ZeroBasedSubMatchIndex))
+   l_Len = ma_Ovector(p_ZeroBasedSubMatchIndex + 1) - ma_Ovector(p_ZeroBasedSubMatchIndex)
+
+   If l_Len > 0 Then
+      SubMatchValue = Mid$(m_SearchedText, ma_Ovector(p_ZeroBasedSubMatchIndex) + 1, l_Len)
+   End If
 End Property
 
 Friend Sub Init(ByVal p_SearchedText As String, pa_OvectorArray() As Long, ByVal p_MatchCount As Long, ByVal p_MatchOffset As Long)

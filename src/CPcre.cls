@@ -351,6 +351,7 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
    Dim l_Delta As Long
    Dim ii As Long ' Loop counter
    Dim l_MatchOffset As Long
+   Dim l_MatchOptions As Long
    
    On Error GoTo ErrorHandler
    
@@ -364,8 +365,10 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
       l_GlobalSearch = Me.Options.General.GlobalSearch
    End If
    
+   l_MatchOptions = Me.Options.Match.OptionFlags   ' Cache match options
+   
    Do
-      l_MatchCount = pcre2_match(m_CompiledRegexHandle, StrPtr(p_TextToSearch), Len(p_TextToSearch), 0, Me.Options.Match.OptionFlags, m_MatchDataHandle, m_MatchContextHandle)
+      l_MatchCount = pcre2_match(m_CompiledRegexHandle, StrPtr(p_TextToSearch), Len(p_TextToSearch), 0, l_MatchOptions, m_MatchDataHandle, m_MatchContextHandle)
    
       Select Case l_MatchCount
       Case PCRE2_ERROR_NOMATCH
@@ -390,6 +393,14 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
             CopyMemory l_MatchStart, ByVal l_OvectorPtr, 4
             CopyMemory l_MatchLen, ByVal (l_OvectorPtr + 4), 4
             l_MatchLen = l_MatchLen - l_MatchStart
+            
+            If l_MatchLen = 0 Then
+               ' Empty match
+               If Not (Me.Options.Match.MatchIfEmpty Or Me.Options.Match.MatchIfEmptyAtStart) Then
+                  ' We don't want empty matches, so go to cleanup
+                  GoTo NoErrorCleanup
+               End If
+            End If
             
             l_SearchChunk = Left$(p_TextToSearch, l_MatchStart + l_MatchLen)
             l_MatchText = Mid$(l_SearchChunk, l_MatchStart + 1)
@@ -482,13 +493,13 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
          
          End If
          
-         
       Case Else
          ' Uhoh! We need to handle these
          Err.Raise vbObjectError - l_MatchCount, , "PCRE Match Error: " & l_MatchCount
       End Select
       
-   Loop While l_GlobalSearch And (l_MatchCount > 0)
+   ' Loop only if global search enabled and we have a match and a match length.
+   Loop While l_GlobalSearch And (l_MatchCount > 0) And (l_MatchLen > 0)
    
 NoErrorCleanup:
    On Error Resume Next

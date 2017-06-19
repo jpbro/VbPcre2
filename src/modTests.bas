@@ -141,7 +141,7 @@ Sub TestRegex2()
    Dim jj As Long
    
    l_SubjectText = "File1.zip.exe" & vbCrLf & "File2.com" & vbCrLf & "File 3"
-   l_Regex = "[\w ]+(\.\S+?)*$"
+   l_Regex = ".*$"  '"[\w ]+(\.\S+?)*$"
    
    ' VBScript Test
    Debug.Print "VBSCRIPT Test"
