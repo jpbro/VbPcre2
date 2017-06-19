@@ -365,7 +365,7 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
    End If
    
    Do
-      l_MatchCount = pcre2_match(m_CompiledRegexHandle, StrPtr(p_TextToSearch), Len(p_TextToSearch), 0, 0, m_MatchDataHandle, m_MatchContextHandle)
+      l_MatchCount = pcre2_match(m_CompiledRegexHandle, StrPtr(p_TextToSearch), Len(p_TextToSearch), 0, Me.Options.Match.OptionFlags, m_MatchDataHandle, m_MatchContextHandle)
    
       Select Case l_MatchCount
       Case PCRE2_ERROR_NOMATCH
