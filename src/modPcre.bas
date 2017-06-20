@@ -182,7 +182,6 @@ Public Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (ByRef De
 Public Function pcreCalloutProc(ByVal p_CalloutBlockPointer As Long, ByVal p_UserData As Long) As Long
    Dim lt_CalloutBlock As modPcre.pcreCalloutBlock
    Dim lo_Pcre As CPcre
-   Dim l_Ptr As Long
    
    Debug.Print "In pcreCalloutProc"
    Debug.Print "Recevied callout from ObjPtr: " & p_UserData

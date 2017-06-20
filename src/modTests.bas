@@ -25,8 +25,6 @@ Option Explicit
 
 Sub TestRegexReplace()
    Dim lo_RegEx As New CPcre
-   Dim lo_Matches As CPcreMatches
-   Dim ii As Long
 
    With lo_RegEx.Options.Compile
       .CaseSensitive = False
@@ -41,7 +39,6 @@ End Sub
 Sub TestRegexMatch()
    Dim lo_RegEx As New CPcre
    Dim lo_Matches As CPcreMatches
-   Dim lo_Match As CPcreMatch
    Dim ii As Long
 
    With lo_RegEx.Options.Compile
@@ -140,8 +137,8 @@ Sub TestRegex2()
    Dim ii As Long
    Dim jj As Long
    
-   l_SubjectText = "File1.zip.exe" & vbCrLf & "File2.com" & vbCrLf & "File 3"
-   l_Regex = ".*$"  '"[\w ]+(\.\S+?)*$"
+   l_SubjectText = "Wyzo" '"File1.zip.exe" & vbCrLf & "File2.com" & vbCrLf & "File 3"
+   l_Regex = "(Manager)|^((copy of )?(" & "MX5|Wyzo" & "))$" '".*$"  '"[\w ]+(\.\S+?)*$"
    
    ' VBScript Test
    Debug.Print "VBSCRIPT Test"
@@ -273,7 +270,6 @@ Public Function testRunReplace(po_RegexObject As Object, ByVal p_Subject As Stri
    
    Dim l_Result As String
    Dim l_Log As String
-   Dim ii As Long
    
    l_Log = vbNewLine & "---------------------------------------------" & vbNewLine
    l_Log = l_Log & "Running testRunReplace test." & vbNewLine

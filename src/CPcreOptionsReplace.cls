@@ -45,8 +45,6 @@ Private Const PCRE2_SUBSTITUTE_UNKNOWN_UNSET As Long = &H800
 ' NOT NEEDED - We handle buffer overflows transparently for host. Private Const PCRE2_SUBSTITUTE_OVERFLOW_LENGTH As Long = &H1000
 
 Private m_Options As Long
-Private m_MatchedEventEnabled As Boolean
-Private m_SubstitutionCacheSize As Long
 
 Private Sub Class_Initialize()
    ' Setup default values
