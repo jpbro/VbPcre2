@@ -270,7 +270,11 @@ Public Function Replace(ByVal p_TextToSearch As String, ByVal p_ReplaceWithText 
          ' Buffer too small - increase size.
          
          l_OutputBufferLength = Len(l_OutputBuffer) * 2
-         l_OutputBuffer = Space$(l_OutputBufferLength)
+         If l_OutputBufferLength > 0 Then
+            ' No replacements to make
+            l_OutputBuffer = Space$(l_OutputBufferLength)
+         End If
+         
       
       Case Is >= 0
          ' Finished
@@ -280,7 +284,7 @@ Public Function Replace(ByVal p_TextToSearch As String, ByVal p_ReplaceWithText 
          
       End Select
       
-   Loop While l_ReplaceResult = PCRE_RC_ERROR_NOMEMORY
+   Loop While (l_ReplaceResult = PCRE_RC_ERROR_NOMEMORY) And (l_OutputBufferLength > 0)
    
    Debug.Print "Replacement result: " & l_ReplaceCount   ' NOTE: Documentation says this will return the number of replacements on success, but it always seems to be 0?
 

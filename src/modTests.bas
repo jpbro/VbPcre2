@@ -33,7 +33,7 @@ Sub TestRegexReplace()
       .GlobalSearch = True
    End With
    
-   Debug.Print "Replace result: " & lo_RegEx.Replace("This is a test of matching test stuff!", "XXXXXXX", "test")
+   Debug.Print "Replace result: " & lo_RegEx.Replace("", "XXXXXXX", "test")
 End Sub
 
 Sub TestRegexMatch()
