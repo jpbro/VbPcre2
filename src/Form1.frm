@@ -5,7 +5,7 @@ Begin VB.Form Form1
    ClientHeight    =   6420
    ClientLeft      =   120
    ClientTop       =   450
-   ClientWidth     =   11595
+   ClientWidth     =   11600
    BeginProperty Font 
       Name            =   "Tahoma"
       Size            =   7.5
@@ -17,7 +17,7 @@ Begin VB.Form Form1
    EndProperty
    LinkTopic       =   "Form1"
    ScaleHeight     =   6420
-   ScaleWidth      =   11595
+   ScaleWidth      =   11600
    StartUpPosition =   2  'CenterScreen
    Begin RichTextLib.RichTextBox rtbTestResults 
       Height          =   3252
@@ -26,10 +26,9 @@ Begin VB.Form Form1
       TabIndex        =   1
       Top             =   1440
       Width           =   5052
-      _ExtentX        =   8916
-      _ExtentY        =   5741
+      _ExtentX        =   8908
+      _ExtentY        =   5733
       _Version        =   393217
-      Enabled         =   -1  'True
       ReadOnly        =   -1  'True
       ScrollBars      =   2
       DisableNoScroll =   -1  'True
@@ -60,10 +59,9 @@ Begin VB.Form Form1
       TabIndex        =   2
       Top             =   1476
       Width           =   5052
-      _ExtentX        =   8916
-      _ExtentY        =   5741
+      _ExtentX        =   8908
+      _ExtentY        =   5733
       _Version        =   393217
-      Enabled         =   -1  'True
       ReadOnly        =   -1  'True
       ScrollBars      =   2
       DisableNoScroll =   -1  'True
@@ -170,7 +168,7 @@ Option Explicit
 ' OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ' SOFTWARE.
 
-Private WithEvents mo_Pcre As CPcre
+Private WithEvents mo_Pcre As cPcre2
 Attribute mo_Pcre.VB_VarHelpID = -1
 
 Private Sub cmdRunTests_Click()
@@ -185,50 +183,50 @@ Private Sub cmdRunTests_Click()
    Me.rtbTestResults(0).SelStart = 0
    Me.rtbTestResults(1).SelStart = 0
    
-   Me.rtbTestResults(0).Text = testRunMatch(New CPcre, l_Subject, l_Regex, False, False)
+   Me.rtbTestResults(0).Text = testRunMatch(New cPcre2, l_Subject, l_Regex, False, False)
    Me.rtbTestResults(1).Text = testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, False, False)
    
-   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, True, False)
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New cPcre2, l_Subject, l_Regex, True, False)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, True, False)
 
-   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, True, True)
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New cPcre2, l_Subject, l_Regex, True, True)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, True, True)
 
-   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, False, True)
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New cPcre2, l_Subject, l_Regex, False, True)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, False, True)
 
    ' No matches should be found in these following tests
    l_Regex = "gobbledeegook"
 
-   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, False, False)
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New cPcre2, l_Subject, l_Regex, False, False)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, False, False)
 
-   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, True, False)
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New cPcre2, l_Subject, l_Regex, True, False)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, True, False)
 
-   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, True, True)
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New cPcre2, l_Subject, l_Regex, True, True)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, True, True)
 
-   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New CPcre, l_Subject, l_Regex, False, True)
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunMatch(New cPcre2, l_Subject, l_Regex, False, True)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunMatch(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, False, True)
 
    ' Substitution Tests
    l_Regex = "test"
    l_Replace = "<REDACTED>"
 
-   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunReplace(New CPcre, l_Subject, l_Regex, l_Replace, False, False)
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunReplace(New cPcre2, l_Subject, l_Regex, l_Replace, False, False)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunReplace(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, l_Replace, False, False)
 
-   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunReplace(New CPcre, l_Subject, l_Regex, l_Replace, True, False)
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunReplace(New cPcre2, l_Subject, l_Regex, l_Replace, True, False)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunReplace(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, l_Replace, True, False)
 
-   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunReplace(New CPcre, l_Subject, l_Regex, l_Replace, True, True)
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunReplace(New cPcre2, l_Subject, l_Regex, l_Replace, True, True)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunReplace(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, l_Replace, True, True)
 
-   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunReplace(New CPcre, l_Subject, l_Regex, l_Replace, False, True)
+   Me.rtbTestResults(0).Text = Me.rtbTestResults(0).Text & testRunReplace(New cPcre2, l_Subject, l_Regex, l_Replace, False, True)
    Me.rtbTestResults(1).Text = Me.rtbTestResults(1).Text & testRunReplace(CreateObject("VBScript.Regexp"), l_Subject, l_Regex, l_Replace, False, True)
 
-   Set mo_Pcre = New CPcre
+   Set mo_Pcre = New cPcre2
    TestRegexEnumerateCallout mo_Pcre
    TestRegexCallout mo_Pcre
       

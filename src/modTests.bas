@@ -24,7 +24,7 @@ Option Explicit
 ' SOFTWARE.
 
 Sub TestRegexReplace()
-   Dim lo_RegEx As New CPcre
+   Dim lo_RegEx As New cPcre2
 
    With lo_RegEx.Options.Compile
       .CaseSensitive = False
@@ -37,8 +37,8 @@ Sub TestRegexReplace()
 End Sub
 
 Sub TestRegexMatch()
-   Dim lo_RegEx As New CPcre
-   Dim lo_Matches As CPcreMatches
+   Dim lo_RegEx As New cPcre2
+   Dim lo_Matches As cPcre2Matches
    Dim ii As Long
 
    With lo_RegEx.Options.Compile
@@ -56,8 +56,8 @@ Sub TestRegexMatch()
    End If
 End Sub
 
-Sub TestRegexCallout(po_Pcre As CPcre)
-   Dim lo_Matches As CPcreMatches
+Sub TestRegexCallout(po_Pcre As cPcre2)
+   Dim lo_Matches As cPcre2Matches
    Dim ii As Long
    
    With po_Pcre.Options.Compile
@@ -79,8 +79,8 @@ Sub TestRegexCallout(po_Pcre As CPcre)
    End If
 End Sub
 
-Sub TestRegexEnumerateCallout(po_Pcre As CPcre)
-   Dim lo_Matches As CPcreMatches
+Sub TestRegexEnumerateCallout(po_Pcre As cPcre2)
+   Dim lo_Matches As cPcre2Matches
    Dim ii As Long
    
    With po_Pcre.Options.Compile
@@ -102,8 +102,8 @@ Sub TestRegexEnumerateCallout(po_Pcre As CPcre)
    End If
 End Sub
 
-Sub TestRegexMatchedEvent(po_Pcre As CPcre)
-   Dim lo_Matches As CPcreMatches
+Sub TestRegexMatchedEvent(po_Pcre As cPcre2)
+   Dim lo_Matches As cPcre2Matches
    
    With po_Pcre.Options.Compile
       .CaseSensitive = False
@@ -127,9 +127,9 @@ Sub TestRegex2()
    Dim lo_Matches As Object 'VBScript_RegExp_55.MatchCollection
    Dim lo_Match As Object 'VBScript_RegExp_55.Match
    
-   Dim lo_RegEx2 As CPcre
-   Dim lo_Matches2 As CPcreMatches
-   Dim lo_Match2 As CPcreMatch
+   Dim lo_RegEx2 As cPcre2
+   Dim lo_Matches2 As cPcre2Matches
+   Dim lo_Match2 As cPcre2Match
 
    Dim l_SubjectText As String
    Dim l_Regex As String
@@ -168,7 +168,7 @@ Sub TestRegex2()
    ' PCRE Test
    Debug.Print "PCRE Test"
       
-   Set lo_RegEx2 = New CPcre
+   Set lo_RegEx2 = New cPcre2
    With lo_RegEx2.Options.Compile
       .CaseSensitive = False
       .Multiline = True
@@ -215,7 +215,7 @@ Public Function testRunMatch(po_RegexObject As Object, ByVal p_Subject As String
    With po_RegexObject
       .Pattern = p_Regex
       
-      If TypeOf po_RegexObject Is CPcre Then
+      If TypeOf po_RegexObject Is cPcre2 Then
          .GlobalSearch = p_Global
       Else
          .Global = p_Global
@@ -229,7 +229,7 @@ Public Function testRunMatch(po_RegexObject As Object, ByVal p_Subject As String
    l_Log = l_Log & "Matches Count: " & lo_Matches.Count & vbNewLine & vbNewLine
    
    For Each lo_Match In lo_Matches
-      If TypeOf lo_Match Is CPcreMatch Then
+      If TypeOf lo_Match Is cPcre2Match Then
          l_Match = lo_Match.MatchedText
       Else
          l_Match = lo_Match.Value
@@ -239,7 +239,7 @@ Public Function testRunMatch(po_RegexObject As Object, ByVal p_Subject As String
             
       l_Log = l_Log & "Match Start Index: " & lo_Match.FirstIndex & vbNewLine & vbNewLine
       
-      If TypeOf lo_Match Is CPcreMatch Then
+      If TypeOf lo_Match Is cPcre2Match Then
          l_SubMatchCount = lo_Match.SubMatchCount
       Else
          l_SubMatchCount = lo_Match.SubMatches.Count
@@ -248,7 +248,7 @@ Public Function testRunMatch(po_RegexObject As Object, ByVal p_Subject As String
       l_Log = l_Log & "Sub-match Count: " & l_SubMatchCount & vbNewLine
       
       For ii = 0 To l_SubMatchCount - 1
-         If TypeOf lo_Match Is CPcreMatch Then
+         If TypeOf lo_Match Is cPcre2Match Then
             l_SubMatch = lo_Match.SubMatchValue(ii)
          Else
             l_SubMatch = lo_Match.SubMatches(ii)
@@ -284,7 +284,7 @@ Public Function testRunReplace(po_RegexObject As Object, ByVal p_Subject As Stri
    With po_RegexObject
       .Pattern = p_Regex
       
-      If TypeOf po_RegexObject Is CPcre Then
+      If TypeOf po_RegexObject Is cPcre2 Then
          .GlobalSearch = p_Global
       Else
          .Global = p_Global

@@ -6,7 +6,7 @@ BEGIN
   DataSourceBehavior  = 0  'vbNone
   MTSTransactionMode  = 0  'NotAnMTSObject
 END
-Attribute VB_Name = "CPcre"
+Attribute VB_Name = "cPcre2"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
@@ -104,7 +104,7 @@ Private Const PCRE2_SUBSTITUTE_GLOBAL As Long = &H100
 Private m_Hlib As Long
 
 ' Options
-Private mo_Options As CPcreOptions
+Private mo_Options As cPcre2Options
 
 ' Cached Handles
 Private m_CompiledRegexHandle As Long
@@ -114,8 +114,8 @@ Private m_MatchContextHandle As Long
 
 Private m_Pattern As String   ' Last used regex pattern
 
-Public Function Options() As CPcreOptions
-   If mo_Options Is Nothing Then Set mo_Options = New CPcreOptions
+Public Function Options() As cPcre2Options
+   If mo_Options Is Nothing Then Set mo_Options = New cPcre2Options
    
    Set Options = mo_Options
 End Function
@@ -334,13 +334,13 @@ Public Function Test(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMat
    Test = (Execute2(p_TextToSearch, p_RegexToMatch, True).Count > 0)
 End Function
 
-Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMatch As String) As CPcreMatches
-   ' Returns CPcreMatches object. If MatchCount = 0 then no matches.
+Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMatch As String) As cPcre2Matches
+   ' Returns CPcre2Matches object. If MatchCount = 0 then no matches.
    Set Execute = Execute2(p_TextToSearch, p_RegexToMatch, False)
 End Function
 
-Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMatch As String, Optional ByVal p_TestOnly As Boolean) As CPcreMatches
-   ' Returns CPcreMatches object. If MatchCount = 0 then no matches.
+Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMatch As String, Optional ByVal p_TestOnly As Boolean) As cPcre2Matches
+   ' Returns CPcre2Matches object. If MatchCount = 0 then no matches.
 
    Dim l_ErrorNumber As Long
    Dim l_ErrorDesc As String
@@ -361,7 +361,7 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
    
    Debug.Print "Subject text: " & p_TextToSearch
    
-   Set Execute2 = New CPcreMatches
+   Set Execute2 = New cPcre2Matches
    
    If Not InitRegex(p_RegexToMatch) Then GoTo NoErrorCleanup
    

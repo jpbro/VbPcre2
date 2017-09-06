@@ -6,45 +6,45 @@ BEGIN
   DataSourceBehavior  = 0  'vbNone
   MTSTransactionMode  = 0  'NotAnMTSObject
 END
-Attribute VB_Name = "CPcreOptions"
+Attribute VB_Name = "cPcre2Options"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
-Public Function Compile() As CPcreOptionsCompile
-   Static so_Options As CPcreOptionsCompile
+Public Function Compile() As cPcre2OptionsCompile
+   Static so_Options As cPcre2OptionsCompile
 
    If so_Options Is Nothing Then
-      Set so_Options = New CPcreOptionsCompile
+      Set so_Options = New cPcre2OptionsCompile
    End If
    Set Compile = so_Options
 End Function
 
-Public Function General() As CPcreOptionsGeneral
-   Static so_Options As CPcreOptionsGeneral
+Public Function General() As cPcre2OptionsGeneral
+   Static so_Options As cPcre2OptionsGeneral
 
    If so_Options Is Nothing Then
-      Set so_Options = New CPcreOptionsGeneral
+      Set so_Options = New cPcre2OptionsGeneral
    End If
    Set General = so_Options
 End Function
 
-Public Function Match() As CPcreOptionsMatch
-   Static so_Options As CPcreOptionsMatch
+Public Function Match() As cPcre2OptionsMatch
+   Static so_Options As cPcre2OptionsMatch
 
    If so_Options Is Nothing Then
-      Set so_Options = New CPcreOptionsMatch
+      Set so_Options = New cPcre2OptionsMatch
    End If
    Set Match = so_Options
 End Function
 
-Public Function Replace() As CPcreOptionsReplace
-   Static so_Options As CPcreOptionsReplace
+Public Function Replace() As cPcre2OptionsReplace
+   Static so_Options As cPcre2OptionsReplace
 
    If so_Options Is Nothing Then
-      Set so_Options = New CPcreOptionsReplace
+      Set so_Options = New cPcre2OptionsReplace
    End If
    Set Replace = so_Options
 End Function

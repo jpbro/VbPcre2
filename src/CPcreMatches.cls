@@ -6,7 +6,7 @@ BEGIN
   DataSourceBehavior  = 0  'vbNone
   MTSTransactionMode  = 0  'NotAnMTSObject
 END
-Attribute VB_Name = "CPcreMatches"
+Attribute VB_Name = "cPcre2Matches"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
@@ -42,8 +42,7 @@ Public Property Get Count() As Long
    Count = mo_Matches.Count
 End Property
 
-Public Property Get Item(ByVal p_ZeroBasedIndex As Long) As CPcreMatch
-Attribute Item.VB_UserMemId = 0
+Public Property Get Item(ByVal p_ZeroBasedIndex As Long) As cPcre2Match
    Set Item = mo_Matches.Item(p_ZeroBasedIndex + 1)
 End Property
 
@@ -54,7 +53,7 @@ Attribute Enumerator.VB_MemberFlags = "40"
 End Function
 
 Public Property Get Text() As String
-   Dim lo_Match As CPcreMatch
+   Dim lo_Match As cPcre2Match
    
    For Each lo_Match In mo_Matches
       Text = Text & lo_Match.SearchedText
@@ -70,9 +69,9 @@ Friend Sub AppendText(ByVal p_Text As String)
 End Sub
 
 Friend Sub Add(ByVal p_TextToSearch As String, pa_OvectorArray() As Long, ByVal p_MatchCount As Long, ByVal p_MatchOffset As Long)
-   Dim lo_Match As CPcreMatch
+   Dim lo_Match As cPcre2Match
    
-   Set lo_Match = New CPcreMatch
+   Set lo_Match = New cPcre2Match
    
    lo_Match.Init p_TextToSearch, pa_OvectorArray, p_MatchCount, p_MatchOffset
    

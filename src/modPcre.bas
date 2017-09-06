@@ -181,14 +181,14 @@ Public Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (ByRef De
 
 Public Function pcreCalloutProc(ByVal p_CalloutBlockPointer As Long, ByVal p_UserData As Long) As Long
    Dim lt_CalloutBlock As modPcre.pcreCalloutBlock
-   Dim lo_Pcre As CPcre
+   Dim lo_Pcre As cPcre2
    
    Debug.Print "In pcreCalloutProc"
    Debug.Print "Recevied callout from ObjPtr: " & p_UserData
 
    ' Get a weak reference to the appropriate PCRE object
    If p_UserData = 0 Then
-      ' Should be ObjPtr of your CPcre object!
+      ' Should be ObjPtr of your CPcre2 object!
       Debug.Assert False
       
    Else
@@ -214,12 +214,12 @@ Public Function pcreCalloutEnumerateProc(ByVal p_CalloutEnumerateBlockPointer As
    ' The error number PCRE2_ERROR_CALLOUT is reserved for use by callout functions; it will never be used by PCRE2 itself.
    
    Dim lt_CalloutEnumerateBlock As modPcre.pcreCalloutEnumerateBlock
-   Dim lo_Pcre As CPcre
+   Dim lo_Pcre As cPcre2
    
    Debug.Print "In pcreCalloutEnumerateProc"
    
    If p_UserData = 0 Then
-      ' Should be ObjPtr of your CPcre object!
+      ' Should be ObjPtr of your CPcre2 object!
       Debug.Assert False
       
    Else
@@ -235,11 +235,11 @@ Public Function pcreCalloutEnumerateProc(ByVal p_CalloutEnumerateBlockPointer As
    Debug.Print "Out pcreCalloutEnumerateProc. Result: " & pcreCalloutEnumerateProc
 End Function
 
-Private Function GetWeakReference(ByVal p_Pointer As Long) As CPcre
+Private Function GetWeakReference(ByVal p_Pointer As Long) As cPcre2
    ' Can't remember where I found this code a long time ago -
    ' would be very happy to credit the originator if anyone knows who it is?
    
-   Dim lo_Object As CPcre
+   Dim lo_Object As cPcre2
    
    CopyMemory lo_Object, p_Pointer, 4&
 
