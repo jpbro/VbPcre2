@@ -235,6 +235,22 @@ Private Function InitRegex(ByVal p_RegexToMatch As String) As Boolean
 End Function
 
 Public Function Replace(ByVal p_TextToSearch As String, ByVal p_ReplaceWithText As String, Optional ByVal p_RegexToMatch As String) As String
+   ' Call SUBSTITUTE function instead of this function for new projects.
+   ' This function is here for easier migration for existing projects
+   ' using VBScript Regex object
+   
+   Replace = Substitute(p_TextToSearch, p_ReplaceWithText, p_RegexToMatch)
+End Function
+
+Public Function Substitute(ByVal p_TextToSearch As String, ByVal p_ReplaceWithText As String, Optional ByVal p_RegexToMatch As String) As String
+   ' Calling this function is preferred to calling Replace, even though there is NO
+   ' functional difference.
+   ' "Substitute" more closely resembles PCRE2 naming,
+   ' "Replace" is to allow for easier migration from VBScript Regex object.
+   
+   ' Returns a string with requested substitutions made (if found).
+   ' Make sure GlobalSearch = True to change all matches.
+   
    Dim l_ErrorNumber As Long
    Dim l_ErrorDesc As String
    Dim l_ReplaceOptionsFlags As Long
@@ -242,9 +258,6 @@ Public Function Replace(ByVal p_TextToSearch As String, ByVal p_ReplaceWithText 
    Dim l_OutputBuffer As String
    Dim l_OutputBufferLength As Long
    Dim l_ReplaceResult As Long
-   
-   ' Returns a string with requested substitutions made (if found).
-   ' Make sure GlobalSearch = True to change all matches.
    
    On Error GoTo ErrorHandler
    
@@ -288,7 +301,7 @@ Public Function Replace(ByVal p_TextToSearch As String, ByVal p_ReplaceWithText 
    
    Debug.Print "Replacement result: " & l_ReplaceCount   ' NOTE: Documentation says this will return the number of replacements on success, but it always seems to be 0?
 
-   Replace = Left$(l_OutputBuffer, l_OutputBufferLength)
+   Substitute = Left$(l_OutputBuffer, l_OutputBufferLength)
 
 NoErrorCleanup:
    On Error Resume Next
@@ -335,8 +348,20 @@ Public Function Test(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMat
 End Function
 
 Public Function Execute(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMatch As String) As cPcre2Matches
+   ' Call MATCH function instead of this function for new projects.
+   ' This function is here for easier migration for existing projects
+   ' using VBScript Regex object
+   
    ' Returns CPcre2Matches object. If MatchCount = 0 then no matches.
-   Set Execute = Execute2(p_TextToSearch, p_RegexToMatch, False)
+   Set Execute = Match(p_TextToSearch, p_RegexToMatch)
+End Function
+
+Public Function Match(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMatch As String) As cPcre2Matches
+   ' No funcitonal difference between Match and Execute methods, but MATCH is preferred.
+   ' "Match" resembles PCRE2 naming, "Execute" resembles VBScript Regex naming
+   
+   ' Returns CPcre2Matches object. If MatchCount = 0 then no matches.
+   Set Match = Execute2(p_TextToSearch, p_RegexToMatch, False)
 End Function
 
 Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_RegexToMatch As String, Optional ByVal p_TestOnly As Boolean) As cPcre2Matches
