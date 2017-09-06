@@ -81,26 +81,6 @@ Public Event CalloutReceived(ByVal p_CalloutNumber As Long, _
 Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryA" (ByVal p_LibraryFileName As String) As Long
 Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal p_Hmodule As Long) As Long
 
-Private Declare Function pcre2_compile_context_create Lib "pcre2-16.dll" Alias "_pcre2_compile_context_create_16@4" (Optional ByVal p_MallocFunc As Long = 0&) As Long
-Private Declare Sub pcre2_compile_context_free Lib "pcre2-16.dll" Alias "_pcre2_compile_context_free_16@4" (ByVal p_ContextHandle As Long)
-Private Declare Function pcre2_compile Lib "pcre2-16.dll" Alias "_pcre2_compile_16@24" (ByVal p_RegexStringPointer As Long, ByVal p_RegexStringLength As Long, ByVal p_CompileOptions As PCRE_CompileOptions, ByRef p_ErrorCode As PCRE_ReturnCode, ByRef p_CharWhereErrorOccured As Long, Optional ByVal p_CompileContextHandle As Long = &H0) As Long
-Private Declare Sub pcre2_code_free Lib "pcre2-16.dll" Alias "_pcre2_code_free_16@4" (ByVal p_CompiledRegecHandle As Long)
-Private Declare Function pcre2_match_data_create_from_pattern Lib "pcre2-16.dll" Alias "_pcre2_match_data_create_from_pattern_16@8" (ByVal p_CompiledRegexHandle As Long, ByVal p_Options As Long) As Long
-Private Declare Function pcre2_match Lib "pcre2-16.dll" Alias "_pcre2_match_16@28" (ByVal p_CompiledRegexHandle As Long, ByVal p_StringToSearchPointer As Long, ByVal p_StringToSearchLength As Long, ByVal p_StartSearchOffset As Long, ByVal p_MatchOptions As Long, ByVal p_MatchDataHandle As Long, ByVal p_MatchContextHandle As Long) As Long
-Private Declare Function pcre2_get_ovector_pointer Lib "pcre2-16.dll" Alias "_pcre2_get_ovector_pointer_16@4" (ByVal p_MatchDataHandle As Long) As Long
-Private Declare Sub pcre2_match_data_free Lib "pcre2-16.dll" Alias "_pcre2_match_data_free_16@4" (ByVal p_MatchDataHandle As Long)
-Private Declare Function pcre2_callout_enumerate Lib "pcre2-16.dll" Alias "_pcre2_callout_enumerate_16@12" (ByVal p_CompiledRegexHandle As Long, ByVal p_CalloutAddress As Long, ByVal p_CalloutDataPointer As Long) As Long
-Private Declare Function pcre2_set_callout Lib "pcre2-16.dll" Alias "_pcre2_set_callout_16@12" (ByVal p_MatchContextHandle As Long, ByVal p_CalloutAddress As Long, ByVal p_CalloutDataPointer As Long) As Long
-Private Declare Function pcre2_substitute Lib "pcre2-16.dll" Alias "_pcre2_substitute_16@44" (ByVal p_CompiledRegexHandle As Long, ByVal p_StringToSearchPointer As Long, ByVal p_StringToSearchLength As Long, ByVal p_StartSearchOffset As Long, ByVal p_MatchOptions As Long, ByVal p_MatchDataHandle As Long, ByVal p_MatchContextHandle As Long, ByVal p_ReplacementTextPointer As Long, ByVal p_ReplacementTextLength As Long, ByVal p_OutputBufferPointer As Long, ByRef p_OutputBufferLength As Long) As Long
-Private Declare Function pcre2_match_context_create Lib "pcre2-16.dll" Alias "_pcre2_match_context_create_16@4" (ByVal p_GeneralContext As Long) As Long
-Private Declare Function pcre2_match_context_free Lib "pcre2-16.dll" Alias "_pcre2_match_context_free_16@4" (ByVal p_MatchContextHandle As Long) As Long
-Private Declare Function pcre2_get_ovector_count Lib "pcre2-16.dll" Alias "_pcre2_get_ovector_count_16@4" (ByVal p_MatchDataHandle As Long) As Long
-Private Declare Function pcre2_get_error_message Lib "pcre2-16.dll" Alias "_pcre2_get_error_message_16@12" (ByVal p_ErrorCode As Long, ByVal p_ErrorMessageBufferPointer As Long, ByVal p_ErrorMessageBufferLength As Long) As Long
-
-Private Const PCRE2_ERROR_NOMATCH As Long = -1
-
-Private Const PCRE2_SUBSTITUTE_GLOBAL As Long = &H100
-
 Private m_Hlib As Long
 
 ' Options
