@@ -43,6 +43,7 @@ Public Property Get Count() As Long
 End Property
 
 Public Property Get Item(ByVal p_ZeroBasedIndex As Long) As cPcre2Match
+Attribute Item.VB_UserMemId = 0
    Set Item = mo_Matches.Item(p_ZeroBasedIndex + 1)
 End Property
 
