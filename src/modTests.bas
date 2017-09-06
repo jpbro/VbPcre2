@@ -140,6 +140,9 @@ Sub TestRegex2()
    l_SubjectText = "Wyzo" '"File1.zip.exe" & vbCrLf & "File2.com" & vbCrLf & "File 3"
    l_Regex = "(Manager)|^((copy of )?(" & "MX5|Wyzo" & "))$" '".*$"  '"[\w ]+(\.\S+?)*$"
    
+   l_SubjectText = "File1.zip.exe" & vbCrLf & "File2.com" & vbCrLf & "File 3"
+   l_Regex = ".*$"  '"[\w ]+(\.\S+?)*$"
+   
    ' VBScript Test
    Debug.Print "VBSCRIPT Test"
    
@@ -156,13 +159,15 @@ Sub TestRegex2()
    
    Debug.Print "Match Count: " & lo_Matches.Count
          
-   For Each lo_Match In lo_Matches
+   For ii = 0 To lo_Matches.Count - 1
+      Set lo_Match = lo_Matches(ii)
+      
       Debug.Print "Match #" & ii + 1 & ": " & lo_Match.Value
       Debug.Print "Sub Match Count: " & lo_Match.SubMatches.Count
       For jj = 0 To lo_Match.SubMatches.Count - 1
          Debug.Print "SubMatch # " & jj + 1 & ": " & lo_Match.SubMatches(jj)
       Next jj
-   Next lo_Match
+   Next ii
    Debug.Print
    
    ' PCRE Test
@@ -182,7 +187,9 @@ Sub TestRegex2()
    
    Debug.Print "Match Count: " & lo_Matches2.Count
    
-   For Each lo_Match2 In lo_Matches2
+   For ii = 0 To lo_Matches2.Count - 1
+      Set lo_Match2 = lo_Matches2(ii)
+      
       Debug.Print "Match #" & ii + 1 & ": " & lo_Match2.MatchedText
       Debug.Print "Sub Match Count: " & lo_Match2.SubMatchCount
       For jj = 0 To lo_Match2.SubMatchCount - 1
