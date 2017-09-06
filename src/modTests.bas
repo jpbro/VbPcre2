@@ -195,7 +195,7 @@ Sub TestRegex2()
       For jj = 0 To lo_Match2.SubMatchCount - 1
          Debug.Print "SubMatch # " & jj + 1 & ": " & lo_Match2.SubMatchValue(jj)
       Next jj
-   Next lo_Match2
+   Next ii
    Debug.Print
 End Sub
 
