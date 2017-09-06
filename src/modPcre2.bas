@@ -1,4 +1,4 @@
-Attribute VB_Name = "modPcre"
+Attribute VB_Name = "modPcre2"
 Option Explicit
 
 ' Copyright (c) 2017 Jason Peter Brown
@@ -179,8 +179,6 @@ Public Const PCRE2_PARTIAL_HARD As Long = &H20
 Public Const PCRE2_ERROR_NOMATCH As Long = -1
 Public Const PCRE2_SUBSTITUTE_GLOBAL As Long = &H100
 
-Public Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
-
 Public Declare Function pcre2_compile_context_create Lib "pcre2-16.dll" Alias "_pcre2_compile_context_create_16@4" (Optional ByVal p_MallocFunc As Long = 0&) As Long
 Public Declare Sub pcre2_compile_context_free Lib "pcre2-16.dll" Alias "_pcre2_compile_context_free_16@4" (ByVal p_ContextHandle As Long)
 Public Declare Function pcre2_compile Lib "pcre2-16.dll" Alias "_pcre2_compile_16@24" (ByVal p_RegexStringPointer As Long, ByVal p_RegexStringLength As Long, ByVal p_CompileOptions As PCRE_CompileOptions, ByRef p_ErrorCode As PCRE_ReturnCode, ByRef p_CharWhereErrorOccured As Long, Optional ByVal p_CompileContextHandle As Long = &H0) As Long
@@ -198,7 +196,7 @@ Public Declare Function pcre2_get_ovector_count Lib "pcre2-16.dll" Alias "_pcre2
 Public Declare Function pcre2_get_error_message Lib "pcre2-16.dll" Alias "_pcre2_get_error_message_16@12" (ByVal p_ErrorCode As Long, ByVal p_ErrorMessageBufferPointer As Long, ByVal p_ErrorMessageBufferLength As Long) As Long
 
 Public Function pcreCalloutProc(ByVal p_CalloutBlockPointer As Long, ByVal p_UserData As Long) As Long
-   Dim lt_CalloutBlock As modPcre.pcreCalloutBlock
+   Dim lt_CalloutBlock As modPcre2.pcreCalloutBlock
    Dim lo_Pcre As cPcre2
    
    Debug.Print "In pcreCalloutProc"
@@ -212,7 +210,7 @@ Public Function pcreCalloutProc(ByVal p_CalloutBlockPointer As Long, ByVal p_Use
    Else
       Set lo_Pcre = GetWeakReference(p_UserData)
       
-      CopyMemory ByVal VarPtr(lt_CalloutBlock), ByVal p_CalloutBlockPointer, LenB(lt_CalloutBlock)
+      win32_CopyMemory ByVal VarPtr(lt_CalloutBlock), ByVal p_CalloutBlockPointer, LenB(lt_CalloutBlock)
    
       ' Ask the PCRE object to raise an event so the hosting code can respond to the callout
       pcreCalloutProc = lo_Pcre.RaiseCalloutReceivedEvent(lt_CalloutBlock)
@@ -231,7 +229,7 @@ Public Function pcreCalloutEnumerateProc(ByVal p_CalloutEnumerateBlockPointer As
    ' In particular, PCRE2_ERROR_NOMATCH forces a standard "no match" failure.
    ' The error number PCRE2_ERROR_CALLOUT is reserved for use by callout functions; it will never be used by PCRE2 itself.
    
-   Dim lt_CalloutEnumerateBlock As modPcre.pcreCalloutEnumerateBlock
+   Dim lt_CalloutEnumerateBlock As modPcre2.pcreCalloutEnumerateBlock
    Dim lo_Pcre As cPcre2
    
    Debug.Print "In pcreCalloutEnumerateProc"
@@ -244,7 +242,7 @@ Public Function pcreCalloutEnumerateProc(ByVal p_CalloutEnumerateBlockPointer As
       ' Get a weak reference to the appropriate PCRE object
       Set lo_Pcre = GetWeakReference(p_UserData)
       
-      CopyMemory ByVal VarPtr(lt_CalloutEnumerateBlock), ByVal p_CalloutEnumerateBlockPointer, LenB(lt_CalloutEnumerateBlock)
+      win32_CopyMemory ByVal VarPtr(lt_CalloutEnumerateBlock), ByVal p_CalloutEnumerateBlockPointer, LenB(lt_CalloutEnumerateBlock)
    
       ' Ask the PCRE object to raise an event so the hosting code can respond to the callout
       pcreCalloutEnumerateProc = lo_Pcre.RaiseCalloutEnumeratedEvent(lt_CalloutEnumerateBlock)
@@ -259,10 +257,10 @@ Private Function GetWeakReference(ByVal p_Pointer As Long) As cPcre2
    
    Dim lo_Object As cPcre2
    
-   CopyMemory lo_Object, p_Pointer, 4&
+   win32_CopyMemory lo_Object, p_Pointer, 4&
 
    Set GetWeakReference = lo_Object
 
-   CopyMemory lo_Object, 0&, 4&
+   win32_CopyMemory lo_Object, 0&, 4&
 End Function
 

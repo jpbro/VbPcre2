@@ -78,9 +78,6 @@ Public Event CalloutReceived(ByVal p_CalloutNumber As Long, _
                              ByRef p_Action As e_CalloutReceivedAction)
                                    
                                
-Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryA" (ByVal p_LibraryFileName As String) As Long
-Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal p_Hmodule As Long) As Long
-
 Private m_Hlib As Long
 
 ' Options
@@ -101,7 +98,7 @@ Public Function Options() As cPcre2Options
 End Function
 
 Private Sub Class_Initialize()
-   m_Hlib = LoadLibrary("pcre2-16.dll")
+   m_Hlib = win32_LoadLibrary("pcre2-16.dll")
    
    If m_Hlib = 0 Then Err.Raise vbObjectError, , "Could not initialize PCRE2 library! Last DLL Error: " & Err.LastDllError
 End Sub
@@ -110,7 +107,7 @@ Private Sub Class_Terminate()
    Cleanup
    
    If m_Hlib <> 0 Then
-      FreeLibrary m_Hlib
+      win32_FreeLibrary m_Hlib
    End If
 End Sub
 
@@ -399,8 +396,8 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
             Dim l_MatchText As String
             Dim l_OriginalMatchText As String
             
-            CopyMemory l_MatchStart, ByVal l_OvectorPtr, 4
-            CopyMemory l_MatchLen, ByVal (l_OvectorPtr + 4), 4
+            win32_CopyMemory l_MatchStart, ByVal l_OvectorPtr, 4
+            win32_CopyMemory l_MatchLen, ByVal (l_OvectorPtr + 4), 4
             l_MatchLen = l_MatchLen - l_MatchStart
             
             If l_MatchLen = 0 Then
@@ -472,7 +469,7 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
          
          ReDim la_Ovector(2 * l_MatchCount - 1)
 
-         CopyMemory la_Ovector(0), ByVal l_OvectorPtr, 2 * l_MatchCount * 4
+         win32_CopyMemory la_Ovector(0), ByVal l_OvectorPtr, 2 * l_MatchCount * 4
          
          If l_Substitute Then
             l_Delta = Len(l_MatchText) - l_MatchLen
@@ -644,7 +641,7 @@ Friend Function RaiseCalloutReceivedEvent(pt_CalloutBlock As pcreCalloutBlock) A
          
          ReDim la_Ovector(2 * l_OvectorCount - 1)
    
-         CopyMemory la_Ovector(0), ByVal .OffsetVectorPointer, 2 * l_OvectorCount * 4
+         win32_CopyMemory la_Ovector(0), ByVal .OffsetVectorPointer, 2 * l_OvectorCount * 4
       Else
          ReDim la_Ovector(0 To -1)
       End If
