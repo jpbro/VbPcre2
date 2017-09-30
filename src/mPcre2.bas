@@ -1,4 +1,4 @@
-Attribute VB_Name = "modPcre2"
+Attribute VB_Name = "mPcre2"
 Option Explicit
 
 ' Copyright (c) 2017 Jason Peter Brown
@@ -196,7 +196,7 @@ Public Declare Function pcre2_get_ovector_count Lib "pcre2-16.dll" Alias "_pcre2
 Public Declare Function pcre2_get_error_message Lib "pcre2-16.dll" Alias "_pcre2_get_error_message_16@12" (ByVal p_ErrorCode As Long, ByVal p_ErrorMessageBufferPointer As Long, ByVal p_ErrorMessageBufferLength As Long) As Long
 
 Public Function pcreCalloutProc(ByVal p_CalloutBlockPointer As Long, ByVal p_UserData As Long) As Long
-   Dim lt_CalloutBlock As modPcre2.pcreCalloutBlock
+   Dim lt_CalloutBlock As mPcre2.pcreCalloutBlock
    Dim lo_Pcre As cPcre2
    
    Debug.Print "In pcreCalloutProc"
@@ -229,7 +229,7 @@ Public Function pcreCalloutEnumerateProc(ByVal p_CalloutEnumerateBlockPointer As
    ' In particular, PCRE2_ERROR_NOMATCH forces a standard "no match" failure.
    ' The error number PCRE2_ERROR_CALLOUT is reserved for use by callout functions; it will never be used by PCRE2 itself.
    
-   Dim lt_CalloutEnumerateBlock As modPcre2.pcreCalloutEnumerateBlock
+   Dim lt_CalloutEnumerateBlock As mPcre2.pcreCalloutEnumerateBlock
    Dim lo_Pcre As cPcre2
    
    Debug.Print "In pcreCalloutEnumerateProc"

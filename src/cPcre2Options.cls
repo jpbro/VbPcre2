@@ -8,9 +8,9 @@ BEGIN
 END
 Attribute VB_Name = "cPcre2Options"
 Attribute VB_GlobalNameSpace = False
-Attribute VB_Creatable = True
+Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
-Attribute VB_Exposed = False
+Attribute VB_Exposed = True
 Option Explicit
 
 Public Function Compile() As cPcre2OptionsCompile

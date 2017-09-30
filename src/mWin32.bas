@@ -1,4 +1,4 @@
-Attribute VB_Name = "modWin32"
+Attribute VB_Name = "mWin32"
 Option Explicit
 
 Public Declare Sub win32_CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)

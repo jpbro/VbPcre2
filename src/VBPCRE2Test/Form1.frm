@@ -1,6 +1,6 @@
 VERSION 5.00
 Object = "{3B7C8863-D78F-101B-B9B5-04021C009402}#1.2#0"; "richtx32.ocx"
-Begin VB.Form Form1 
+Begin VB.Form frmTest 
    Caption         =   "VbPcre2 Test"
    ClientHeight    =   6420
    ClientLeft      =   120
@@ -29,6 +29,7 @@ Begin VB.Form Form1
       _ExtentX        =   8908
       _ExtentY        =   5733
       _Version        =   393217
+      Enabled         =   -1  'True
       ReadOnly        =   -1  'True
       ScrollBars      =   2
       DisableNoScroll =   -1  'True
@@ -62,6 +63,7 @@ Begin VB.Form Form1
       _ExtentX        =   8908
       _ExtentY        =   5733
       _Version        =   393217
+      Enabled         =   -1  'True
       ReadOnly        =   -1  'True
       ScrollBars      =   2
       DisableNoScroll =   -1  'True
@@ -139,7 +141,7 @@ Begin VB.Form Form1
       Width           =   4800
    End
 End
-Attribute VB_Name = "Form1"
+Attribute VB_Name = "frmTest"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True

@@ -1,4 +1,4 @@
-Attribute VB_Name = "modStrings"
+Attribute VB_Name = "mStrings"
 Option Explicit
 
 Private Declare Function PutMem4 Lib "msvbvm60.dll" (ByVal Addr As Long, ByVal NewVal As Long) As Long

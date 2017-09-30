@@ -1,4 +1,4 @@
-Attribute VB_Name = "modTests"
+Attribute VB_Name = "mTests"
 Option Explicit
 
 ' Copyright (c) 2017 Jason Peter Brown

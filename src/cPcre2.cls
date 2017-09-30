@@ -10,7 +10,7 @@ Attribute VB_Name = "cPcre2"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
-Attribute VB_Exposed = False
+Attribute VB_Exposed = True
 Option Explicit
 
 ' Copyright (c) 2017 Jason Peter Brown <jason@bitspaces.com>
