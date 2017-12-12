@@ -150,7 +150,7 @@ Sub TestRegex2()
    With lo_RegEx
       .IgnoreCase = True
       .Global = True
-      .Multiline = True
+      .MultiLine = True
    End With
    
    lo_RegEx.Pattern = l_Regex
@@ -176,7 +176,7 @@ Sub TestRegex2()
    Set lo_RegEx2 = New cPcre2
    With lo_RegEx2.Options.Compile
       .CaseSensitive = False
-      .Multiline = True
+      .MultiLine = True
    End With
       
    With lo_RegEx2.Options.General

@@ -493,9 +493,7 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
             
             l_MatchOffset = l_MatchOffset + l_MatchStart + l_MatchLen
          
-            If l_GlobalSearch Then
-               p_TextToSearch = Mid$(p_TextToSearch, l_MatchStart + l_MatchLen + 1)
-            End If
+            p_TextToSearch = Mid$(p_TextToSearch, l_MatchStart + l_MatchLen + 1)
          
          End If
          
