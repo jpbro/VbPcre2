@@ -25,15 +25,18 @@ Option Explicit
 
 Sub TestRegexReplace()
    Dim lo_RegEx As New cPcre2
-
+   Dim lo_Matches As cPcre2Matches
+   
    With lo_RegEx.Options.Compile
       .CaseSensitive = False
    End With
-   With lo_RegEx.Options.General
-      .GlobalSearch = True
-   End With
    
-   Debug.Print "Replace result: " & lo_RegEx.Replace("", "XXXXXXX", "test")
+   lo_RegEx.GlobalSearch = False
+   
+   Set lo_Matches = lo_RegEx.Match("This is a test.", "t")
+   Debug.Print lo_Matches.Text
+   
+   Debug.Print "Replace result: " & lo_RegEx.Substitute(lo_Matches.Text, "X")
 End Sub
 
 Sub TestRegexMatch()
@@ -46,6 +49,9 @@ Sub TestRegexMatch()
    End With
    
    Set lo_Matches = lo_RegEx.Execute("This is a test of matching stuff!", "(test)\s*.+\s*(Mat)")
+   
+   Debug.Print lo_Matches.Item(0).SubMatchValue(1)
+   
    If lo_Matches.Count > 0 Then
       For ii = 0 To lo_Matches.Count - 1
          Debug.Print "Match #" & ii + 1 & ": " & lo_Matches(ii).MatchedText
