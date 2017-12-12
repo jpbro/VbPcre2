@@ -1,6 +1,6 @@
 Type=Exe
 Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#..\..\..\..\..\..\..\Windows\SysWOW64\stdole2.tlb#OLE Automation
-Reference=*\G{1A0875A1-6CC0-4731-832B-7161288D3C08}#1.0#0#..\..\bin\VBPCRE2.dll#
+Reference=*\G{1A0875A1-6CC0-4731-832B-7161288D3C08}#2.0#0#..\..\bin\VBPCRE2.dll#
 Object={3B7C8863-D78F-101B-B9B5-04021C009402}#1.2#0; richtx32.ocx
 Form=Form1.frm
 Module=mTests; mTests.bas
