@@ -23,6 +23,14 @@ Option Explicit
 ' OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ' SOFTWARE.
 
+Sub TestRegexMatchMultiline()
+   Dim lo_RegEx As New cPcre2
+   
+   lo_RegEx.Options.Compile.MultiLine = True
+   
+   Debug.Print lo_RegEx.match("XXXAXXXX" & vbNewLine & "YYYYYAYYYYY", "A.+A").Count
+End Sub
+
 Sub TestRegexReplace()
    Dim lo_RegEx As New cPcre2
    Dim lo_Matches As cPcre2Matches
@@ -33,7 +41,7 @@ Sub TestRegexReplace()
    
    lo_RegEx.GlobalSearch = False
    
-   Set lo_Matches = lo_RegEx.Match("This is a test.", "t")
+   Set lo_Matches = lo_RegEx.match("This is a test.", "t")
    Debug.Print lo_Matches.Text
    
    Debug.Print "Replace result: " & lo_RegEx.Substitute(lo_Matches.Text, "X")
@@ -50,7 +58,7 @@ Sub TestRegexMatch()
    
    Set lo_Matches = lo_RegEx.Execute("This is a test of matching stuff!", "(test)\s*.+\s*(Mat)")
    
-   Debug.Print lo_Matches.Item(0).SubMatchValue(1)
+   Debug.Print lo_Matches.Item(0).SubMatchFirstIndex(0)
    
    If lo_Matches.Count > 0 Then
       For ii = 0 To lo_Matches.Count - 1
@@ -119,7 +127,7 @@ Sub TestRegexMatchedEvent(po_Pcre As cPcre2)
       .GlobalSearch = True
    End With
    
-   With po_Pcre.Options.Match
+   With po_Pcre.Options.match
       .MatchedEventEnabled = True
    End With
    
