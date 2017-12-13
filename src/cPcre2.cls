@@ -235,6 +235,8 @@ Public Function Substitute(ByVal p_TextToSearch As String, ByVal p_ReplaceWithTe
    Dim l_OutputBuffer As String
    Dim l_OutputBufferLength As Long
    Dim l_ReplaceResult As Long
+   Dim l_StrPtrSearch As Long
+   Dim l_StrPtrReplace As Long
    
    On Error GoTo ErrorHandler
    
@@ -253,7 +255,13 @@ Public Function Substitute(ByVal p_TextToSearch As String, ByVal p_ReplaceWithTe
    
    ' Attempt substitution
    Do
-      l_ReplaceResult = pcre2_substitute(m_CompiledRegexHandle, StrPtr(p_TextToSearch), Len(p_TextToSearch), 0, l_ReplaceOptionsFlags, m_MatchDataHandle, 0, StrPtr(p_ReplaceWithText), Len(p_ReplaceWithText), StrPtr(l_OutputBuffer), l_OutputBufferLength)
+      l_StrPtrSearch = StrPtr(p_TextToSearch)
+      If l_StrPtrSearch = 0 Then l_StrPtrSearch = StrPtr("")
+      
+      l_StrPtrReplace = StrPtr(p_ReplaceWithText)
+      If l_StrPtrReplace = 0 Then l_StrPtrReplace = StrPtr("")
+      
+      l_ReplaceResult = pcre2_substitute(m_CompiledRegexHandle, l_StrPtrSearch, Len(p_TextToSearch), 0, l_ReplaceOptionsFlags, m_MatchDataHandle, 0, l_StrPtrReplace, Len(p_ReplaceWithText), StrPtr(l_OutputBuffer), l_OutputBufferLength)
       
       Select Case l_ReplaceResult
       Case PCRE_RC_ERROR_NOMEMORY
@@ -358,6 +366,7 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
    Dim ii As Long ' Loop counter
    Dim l_MatchOffset As Long
    Dim l_MatchOptions As Long
+   Dim l_StrPtr As Long
    
    On Error GoTo ErrorHandler
    
@@ -374,7 +383,10 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
    l_MatchOptions = Me.Options.Match.OptionFlags   ' Cache match options
    
    Do
-      l_MatchCount = pcre2_match(m_CompiledRegexHandle, StrPtr(p_TextToSearch), Len(p_TextToSearch), 0, l_MatchOptions, m_MatchDataHandle, m_MatchContextHandle)
+      l_StrPtr = StrPtr(p_TextToSearch)
+      If l_StrPtr = 0 Then l_StrPtr = StrPtr("")
+      
+      l_MatchCount = pcre2_match(m_CompiledRegexHandle, l_StrPtr, Len(p_TextToSearch), 0, l_MatchOptions, m_MatchDataHandle, m_MatchContextHandle)
    
       Select Case l_MatchCount
       Case PCRE2_ERROR_NOMATCH
@@ -500,6 +512,7 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
       Case Else
          ' Uhoh! We need to handle these
          Err.Raise vbObjectError - l_MatchCount, , "PCRE Match Error: " & l_MatchCount
+         
       End Select
       
    ' Loop only if global search enabled and we have a match and a match length.
