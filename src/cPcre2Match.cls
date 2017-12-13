@@ -83,6 +83,18 @@ Public Property Get SubMatchValue(ByVal p_ZeroBasedSubMatchIndex As Long) As Str
    End If
 End Property
 
+Public Property Get SubMatchFirstIndex(ByVal p_ZeroBasedSubMatchIndex As Long) As Long
+   p_ZeroBasedSubMatchIndex = 2 * (p_ZeroBasedSubMatchIndex + 1)
+   
+   SubMatchFirstIndex = ma_Ovector(p_ZeroBasedSubMatchIndex)
+End Property
+
+Public Property Get SubMatchLastIndex(ByVal p_ZeroBasedSubMatchIndex As Long) As Long
+   p_ZeroBasedSubMatchIndex = 2 * (p_ZeroBasedSubMatchIndex + 1)
+   
+   SubMatchLastIndex = ma_Ovector(p_ZeroBasedSubMatchIndex + 1)
+End Property
+
 Friend Sub Init(ByVal p_SearchedText As String, pa_OvectorArray() As Long, ByVal p_MatchCount As Long, ByVal p_MatchOffset As Long)
    If p_MatchCount > 0 Then
       ma_Ovector = pa_OvectorArray
@@ -94,3 +106,4 @@ Friend Sub Init(ByVal p_SearchedText As String, pa_OvectorArray() As Long, ByVal
    
    m_MatchOffset = p_MatchOffset
 End Sub
+
