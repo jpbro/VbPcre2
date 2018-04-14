@@ -98,9 +98,18 @@ Public Function Options() As cPcre2Options
 End Function
 
 Private Sub Class_Initialize()
-   m_Hlib = win32_LoadLibrary("pcre2-16.dll")
+   win32_OutputDebugString "Initializing VBPCRE2.cPcre2"
    
+   m_Hlib = win32_LoadLibrary(App.Path & "\pcre2-16.dll")
+   If m_Hlib = 0 Then
+      m_Hlib = win32_LoadLibrary("pcre2-16.dll")
+   End If
+   
+   win32_OutputDebugString "Loaded pcre2-16.dll. Handle: " & m_Hlib
+  
    If m_Hlib = 0 Then Err.Raise vbObjectError, , "Could not initialize PCRE2 library! Last DLL Error: " & Err.LastDllError
+
+   win32_OutputDebugString "Initialized VBPCRE2.cPcre2"
 End Sub
 
 Private Sub Class_Terminate()
@@ -240,8 +249,6 @@ Public Function Substitute(ByVal p_TextToSearch As String, ByVal p_ReplaceWithTe
    
    On Error GoTo ErrorHandler
    
-   Debug.Print "Subject text: " & p_TextToSearch
-   
    If Not InitRegex(p_RegexToMatch) Then GoTo NoErrorCleanup
 
    l_ReplaceOptionsFlags = Me.Options.Replace.OptionFlags
@@ -253,14 +260,14 @@ Public Function Substitute(ByVal p_TextToSearch As String, ByVal p_ReplaceWithTe
    l_OutputBuffer = Space$(Len(p_TextToSearch) * 2)
    l_OutputBufferLength = Len(l_OutputBuffer)
    
+   l_StrPtrSearch = StrPtr(p_TextToSearch)
+   If l_StrPtrSearch = 0 Then l_StrPtrSearch = StrPtr("")
+   
+   l_StrPtrReplace = StrPtr(p_ReplaceWithText)
+   If l_StrPtrReplace = 0 Then l_StrPtrReplace = StrPtr("")
+         
    ' Attempt substitution
    Do
-      l_StrPtrSearch = StrPtr(p_TextToSearch)
-      If l_StrPtrSearch = 0 Then l_StrPtrSearch = StrPtr("")
-      
-      l_StrPtrReplace = StrPtr(p_ReplaceWithText)
-      If l_StrPtrReplace = 0 Then l_StrPtrReplace = StrPtr("")
-      
       l_ReplaceResult = pcre2_substitute(m_CompiledRegexHandle, l_StrPtrSearch, Len(p_TextToSearch), 0, l_ReplaceOptionsFlags, m_MatchDataHandle, 0, l_StrPtrReplace, Len(p_ReplaceWithText), StrPtr(l_OutputBuffer), l_OutputBufferLength)
       
       Select Case l_ReplaceResult
@@ -284,8 +291,6 @@ Public Function Substitute(ByVal p_TextToSearch As String, ByVal p_ReplaceWithTe
       
    Loop While (l_ReplaceResult = PCRE_RC_ERROR_NOMEMORY) And (l_OutputBufferLength > 0)
    
-   Debug.Print "Replacement result: " & l_ReplaceCount   ' NOTE: Documentation says this will return the number of replacements on success, but it always seems to be 0?
-
    Substitute = Left$(l_OutputBuffer, l_OutputBufferLength)
 
 NoErrorCleanup:
