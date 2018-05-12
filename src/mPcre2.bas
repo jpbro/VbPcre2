@@ -200,7 +200,7 @@ Public Function pcreCalloutProc(ByVal p_CalloutBlockPointer As Long, ByVal p_Use
    Dim lo_Pcre As cPcre2
    
    Debug.Print "In pcreCalloutProc"
-   Debug.Print "Recevied callout from ObjPtr: " & p_UserData
+   Debug.Print "Received callout from ObjPtr: " & p_UserData
 
    ' Get a weak reference to the appropriate PCRE object
    If p_UserData = 0 Then
